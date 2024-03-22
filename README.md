@@ -5,6 +5,7 @@ The code of the first game made by me, **Dungeonine**! Dungeonine is a action an
 ### The code
 
 -   The root directory includes the code which manages the core mechanics of the game.
+-   Item Manager folder contains the code for managing inventory, chest and accessories.
 -   The Floor Manager folder contains necessary code for every single floor in the game.
 -   The Item Scripts folder contains code of the game items.
 -   The Main Menu folder contains code for main menu.
