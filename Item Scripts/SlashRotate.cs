@@ -12,6 +12,7 @@ public class IronSword : MonoBehaviour
     Camera mainCamera;
     float activeTimer;
     Item item;
+    HitEffect hitEffect;
 
     void Start()
     {
@@ -21,6 +22,8 @@ public class IronSword : MonoBehaviour
         rotateOnDegree = GameObject.FindGameObjectWithTag("GameManager").GetComponent<RotateOnDegree>();
         mainCamera = Camera.main;
         activeTimer = activeFor;
+        hitEffect = bonine.GetComponent<HitEffect>();
+
 
         bonineMovement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
         item = GetComponent<ItemParam>().item;
@@ -33,6 +36,7 @@ public class IronSword : MonoBehaviour
             Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
             Vector2 direction = (mousePosition - bonine.transform.position).normalized;
             maskTransform.localPosition = new Vector2(0.551f, -1.1f);
+            hitEffect.CreateHitffect();
 
             float degree = Mathf.Atan2(direction.y, direction.x) * 57.295779f;
             if (degree < 0) degree = 360 - Mathf.Abs(degree);

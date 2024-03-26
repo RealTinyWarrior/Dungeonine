@@ -2,12 +2,12 @@ using UnityEngine;
 
 public class DestroyObject : MonoBehaviour
 {
-    public float start;
-    float startTimer;
+    public float timer;
+    float countDown;
 
     void Update()
     {
-        if (startTimer < start) startTimer += Time.deltaTime;
+        if (countDown < timer) countDown += Time.deltaTime;
         else Destroy(gameObject);
     }
 }

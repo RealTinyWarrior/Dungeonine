@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 [SerializeField]
 public class ChestManager : MonoBehaviour
@@ -7,6 +8,7 @@ public class ChestManager : MonoBehaviour
     GameItems gameItems;
     bool doLoadChest = true;
     public GameObject chestObject;
+    public Image chestBackground;
     public int floor;
     public Chest[] chest;
 
@@ -121,5 +123,10 @@ public class ChestManager : MonoBehaviour
                 else if (!chest[i].items[j].spawnable) chest[i].items[j] = new ItemID();
             }
         }
+    }
+
+    public void ChangeChestSprite(Sprite sprite)
+    {
+        chestBackground.sprite = sprite;
     }
 }
