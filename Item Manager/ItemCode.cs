@@ -1,7 +1,7 @@
 public enum ItemCode
 {
-    Empty, NiggerGlob, ChocoBall, TheSlasher,
-    TheNigger
+    Empty, TheSlasher, Key_F1,
+    Stone
 }
 
 //* line number represents id (except 0, 1, 2)

@@ -10,6 +10,11 @@ public class OnInteraction : MonoBehaviour
     public string interactionText;
 
     void Start() => accessManager = transform.GetChild(0).GetComponent<OnObjectAccess>();
+    void Update()
+    {
+        if (Input.GetKey(KeyCode.E) && accessManager.canAccess) onClick?.Invoke(gameObject);
+
+    }
 
     void OnMouseEnter()
     {

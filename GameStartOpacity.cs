@@ -14,6 +14,7 @@ public class GameStartOpacity : MonoBehaviour
     Image fadeImage;
     float parentTimer = 0f;
     bool isDone = false;
+
     void Start()
     {
         bonineMovement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
@@ -39,7 +40,7 @@ public class GameStartOpacity : MonoBehaviour
             if (startTimer < fadeTime) startTimer += Time.deltaTime;
             else
             {
-                bonineMovement.allowMovement = true;
+
                 gameObject.GetComponent<RectTransform>().DOAnchorPos(new Vector2(0, 600), 1f);
             }
         }

@@ -11,9 +11,12 @@ public class ChestManager : MonoBehaviour
     public Image chestBackground;
     public int floor;
     public Chest[] chest;
+    int openedChestID = -1;
+    Movement movement;
 
     void Start()
     {
+        movement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
         inventory = GetComponent<InventoryManager>();
         gameItems = GetComponent<GameItems>();
 
@@ -21,7 +24,7 @@ public class ChestManager : MonoBehaviour
         {
             for (int j = 0; j < chest[i].items.Length; j++)
             {
-                if (chest[i].items[j].spawnable && chest[i].items[j].rangeAmount)
+                if (chest[i].items[j].rangeAmount)
                 {
                     chest[i].items[j].amount = Random.Range(chest[i].items[j].firstAmount, chest[i].items[j].lastAmount);
                 }
@@ -31,6 +34,9 @@ public class ChestManager : MonoBehaviour
 
     public void OpenChestID(int id)
     {
+        movement.allowMovement = false;
+        openedChestID = id;
+
         if (doLoadChest)
         {
             LoadChestData();
@@ -65,8 +71,10 @@ public class ChestManager : MonoBehaviour
         chestObject.SetActive(true);
     }
 
-    public void ExitChestID(int id)
+    public void ExitChestID()
     {
+        movement.allowMovement = true;
+        int id = openedChestID;
         chestObject.SetActive(false);
 
         for (int i = 0; i < chest.Length; i++)
@@ -82,6 +90,8 @@ public class ChestManager : MonoBehaviour
                 break;
             }
         }
+
+        openedChestID = -1;
     }
 
     public void SaveChestData()

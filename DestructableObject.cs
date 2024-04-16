@@ -15,9 +15,9 @@ public class DestructableObject : MonoBehaviour
         defaultXPosition = transform.position.x;
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(int damage)
     {
-        health.Damange(damage);
+        health.Damage(damage);
         hasShakedTimes = 0;
         isShaking = true;
 

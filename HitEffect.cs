@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class HitEffect : MonoBehaviour
 {
+    public Vector2 effectOffset;
     public float effectSpeed = 0.2f;
     public Color color;
     bool doEffect = false;
@@ -32,8 +33,6 @@ public class HitEffect : MonoBehaviour
                 float opacity = 1 - (((effectSpeed / 2) - timer) / (effectSpeed / 2));
                 spriteRenderer.color = Color.Lerp(Color.white, color, opacity);
                 spriteRenderer.color = new Color(spriteRenderer.color.r, spriteRenderer.color.g, spriteRenderer.color.b, 1);
-
-                Debug.Log(opacity);
             }
 
             else
@@ -41,8 +40,6 @@ public class HitEffect : MonoBehaviour
                 float opacity = 1 - ((timer - (effectSpeed / 2)) / (effectSpeed / 2));
                 spriteRenderer.color = Color.Lerp(Color.white, color, opacity);
                 spriteRenderer.color = new Color(spriteRenderer.color.r, spriteRenderer.color.g, spriteRenderer.color.b, 1);
-
-                Debug.Log(opacity);
             }
         }
     }

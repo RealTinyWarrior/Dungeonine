@@ -9,6 +9,11 @@ public class InventoryPopup : MonoBehaviour
     RectTransform rectTransform;
     public float popupSpeed = 0.5f;
 
+    void Update()
+    {
+        if (Input.GetKey(KeyCode.V)) Popup();
+    }
+
     void Start()
     {
         rectTransform = GetComponent<RectTransform>();

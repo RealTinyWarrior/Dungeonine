@@ -48,6 +48,7 @@ public class MainMenuManager : MonoBehaviour
 
         text.outlineWidth = 0.3f;
         text.outlineColor = Color.black;
+        Time.timeScale = 1;
     }
 
     void Update()

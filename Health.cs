@@ -3,27 +3,33 @@ using UnityEngine;
 public class Health : MonoBehaviour
 {
     public int maxHealth;
-    [HideInInspector] public float health;
+    public EffectCode deathEffect;
+    [HideInInspector] public int health;
+    EffectManager effectManager;
+    HitEffect hitEffect;
 
     void Start()
     {
+        effectManager = GameObject.FindGameObjectWithTag("EffectManager").GetComponent<EffectManager>();
+        hitEffect = GetComponent<HitEffect>();
         health = maxHealth;
     }
 
-    public void Damange(float damage)
+    public void Damage(int damage)
     {
-        //TODO: set some effects if necessary
+        hitEffect.CreateHitffect();
         health -= damage;
 
         if (health < 0)
         {
             health = 0;
+            effectManager.Create(deathEffect, 0.5f, (Vector2)transform.position + hitEffect.effectOffset, 1.2f);
+            Destroy(gameObject);
         }
     }
 
-    public void Heal(float healing)
+    public void Heal(int healing)
     {
-        //TODO: set some effects if necessary
         health += healing;
 
         if (health > maxHealth)

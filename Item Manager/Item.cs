@@ -12,6 +12,7 @@ public class Item
     }
     public string name;
     public int id = 0;
+    public string about = "This item has no description.";
     public Sprite icon;
     public GameObject itemObject;
     public ItemTypes itemType = ItemTypes.Classic;

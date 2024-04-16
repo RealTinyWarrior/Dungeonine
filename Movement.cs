@@ -2,11 +2,13 @@ using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
+    [HideInInspector] public bool isUsedByKnockback;
     Rigidbody2D rb;
     public Vector2 movement;
     Animator animator;
     public float speed = 2;
     public bool allowMovement = true;
+    public bool isDead = false;
 
     [HideInInspector]
     public enum Animation
@@ -33,7 +35,7 @@ public class Movement : MonoBehaviour
 
     void Update()
     {
-        if (!allowMovement)
+        if (!allowMovement || isDead)
         {
             ChangeAnimationState(idleState);
             movement = Vector2.zero;
@@ -79,7 +81,8 @@ public class Movement : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!allowMovement) rb.velocity = Vector2.zero;
+        if (isUsedByKnockback) return;
+        if (!allowMovement || isDead) rb.velocity = Vector2.zero;
 
         else rb.velocity = speed * movement;
     }

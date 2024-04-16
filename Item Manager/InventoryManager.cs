@@ -14,6 +14,14 @@ public class InventoryManager : MonoBehaviour
     public GameObject itemPrefab;
     public RectTransform selectIcon;
     public Sprite emptyItem;
+    public Image[] detailObject;
+    public TextMeshProUGUI[] detailAmount;
+    public Image[] detailImage;
+    bool accessedDetail;
+    Item[] detailItem;
+    public GameObject topDetails;
+    public GameObject bottomDetails;
+    public TextMeshProUGUI[] detailsTexts;
     int selectedHotbar = 0;
     public Image[] inventorySlots;
     public TextMeshProUGUI[] amountTexts;
@@ -34,6 +42,7 @@ public class InventoryManager : MonoBehaviour
 
     void Add(int id, int index, int amount, Item[] itemArray, Image[] iconArray, TextMeshProUGUI[] textArray)
     {
+        Debug.Log(id + " " + amount);
         Item item = gameItems.GetItem(id);
         item.itemReference = gameItems.items[id].itemReference;
 
@@ -60,10 +69,14 @@ public class InventoryManager : MonoBehaviour
         Add(item01.id, index02, item01.amount, itemArray02, iconArray02, textArray02);
     }
 
+    public void RemoveItem(int itemIndex) => Remove(itemIndex, Inventory, iconSlots, amountTexts);
+
     void Awake()
     {
         bonineTransform = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Transform>();
         Inventory = new Item[inventorySlots.Length];
+        detailItem = new Item[1];
+        detailItem[0] = new Item();
         LoadEmptyInventory();
         SetStorage();
 
@@ -206,8 +219,9 @@ public class InventoryManager : MonoBehaviour
                     currentItem, currentIndex, Inventory, iconSlots, amountTexts,
                     currentChest, previousChestIndex, chest, chestIcons, chestAmount
                 );
+                CreateItemInstance(currentIndex);
 
-                chestSlots[previousChestIndex].color = new Color(0, 0, 0, 0.5f);
+                chestSlots[previousChestIndex].color = new Color(1, 1, 1, 0.1765f);
                 previousChestIndex = -1;
 
             }
@@ -216,7 +230,7 @@ public class InventoryManager : MonoBehaviour
             {
                 Item currentItem = Inventory[currentIndex];
                 Item currentUtility = utility[accessedUtilitySlot];
-                utilitySlot[accessedUtilitySlot].color = new Color(1, 1, 1, 0.47f);
+                utilitySlot[accessedUtilitySlot].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
 
                 if (currentItem.itemType != Item.ItemTypes.Utility && currentItem.id != 0)
                 {
@@ -228,6 +242,7 @@ public class InventoryManager : MonoBehaviour
                     currentItem, currentIndex, Inventory, iconSlots, amountTexts,
                     currentUtility, accessedUtilitySlot, utility, utilityIcons, utilityAmount
                 );
+                CreateItemInstance(currentIndex);
 
                 accessedUtilitySlot = -1;
                 CheckForActiveUtility();
@@ -240,6 +255,23 @@ public class InventoryManager : MonoBehaviour
 
             //* Add more conditions here if necessary
 
+            else if (accessedDetail)
+            {
+                if (Inventory[currentIndex].itemReference != null) Inventory[previousIndex].itemReference.SetActive(false);
+
+                Exchange(
+                    detailItem[0], 0, detailItem, detailImage, detailAmount,
+                    Inventory[currentIndex], currentIndex, Inventory, iconSlots, amountTexts
+                );
+
+                CreateItemInstance(currentIndex);
+
+                accessedDetail = false;
+                SetupDetails(detailItem[0]);
+                CheckForActiveUtility();
+                detailObject[0].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
+            }
+
             else
             {
                 inventorySlots[currentIndex].color = new Color(1, 1, 1);
@@ -251,7 +283,7 @@ public class InventoryManager : MonoBehaviour
         {
             if (previousIndex == currentIndex)
             {
-                inventorySlots[previousIndex].color = new Color(1, 1, 1, 0.47f);
+                inventorySlots[previousIndex].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
                 previousIndex = -1;
 
                 return;
@@ -278,8 +310,10 @@ public class InventoryManager : MonoBehaviour
                 currentItem, currentIndex, Inventory, iconSlots, amountTexts
             );
 
+            CreateItemInstance(currentIndex);
+
             //* Resetting to default
-            inventorySlots[previousIndex].color = new Color(1, 1, 1, 0.47f);
+            inventorySlots[previousIndex].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
             previousIndex = -1;
         }
 
@@ -290,6 +324,13 @@ public class InventoryManager : MonoBehaviour
     {
         if (previousChestIndex != -1)
         {
+            if (slot == previousChestIndex)
+            {
+                chestSlots[previousChestIndex].color = new Color(1, 1, 1, 0.1765f);
+                previousChestIndex = -1;
+                return;
+            }
+
             if ((chest[previousChestIndex].id == chest[slot].id) && (chest[previousChestIndex].id != 0 || chest[slot].id != 0) && chest[slot].stackable)
             {
                 chestAmount[slot].text = (chest[slot].amount + chest[previousChestIndex].amount).ToString();
@@ -305,7 +346,7 @@ public class InventoryManager : MonoBehaviour
                 chest[slot], slot, chest, chestIcons, chestAmount
             );
 
-            chestSlots[previousChestIndex].color = new Color(0, 0, 0, 0.5f);
+            chestSlots[previousChestIndex].color = new Color(1, 1, 1, 0.1765f);
             previousChestIndex = -1;
         }
 
@@ -328,9 +369,11 @@ public class InventoryManager : MonoBehaviour
                     Inventory[previousIndex], previousIndex, Inventory, iconSlots, amountTexts,
                     chest[slot], slot, chest, chestIcons, chestAmount
                 );
+
+                CreateItemInstance(previousIndex);
             }
 
-            inventorySlots[previousIndex].color = new Color(1, 1, 1, 0.47f);
+            inventorySlots[previousIndex].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
             previousIndex = -1;
         }
 
@@ -360,7 +403,7 @@ public class InventoryManager : MonoBehaviour
             AddItemExtended(chestItem.id, chestItem.amount, 1.5f, chestVelocity * 5.5f, bonineTransform.position);
 
             //? Resetting to default
-            chestSlots[previousChestIndex].color = new Color(0, 0, 0, 0.5f);
+            chestSlots[previousChestIndex].color = new Color(1, 1, 1, 0.1765f);
             accessedUtilitySlot = -1;
             previousIndex = -1;
             previousChestIndex = -1;
@@ -387,7 +430,7 @@ public class InventoryManager : MonoBehaviour
         AddItemExtended(previousItem.id, previousItem.amount, 1.5f, initialVelocity * 5.5f, bonineTransform.position);
 
         //? Resetting to default
-        inventorySlots[previousIndex].color = new Color(1, 1, 1, 0.47f);
+        inventorySlots[previousIndex].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
         previousIndex = -1;
         CheckForActiveUtility();
     }
@@ -403,11 +446,13 @@ public class InventoryManager : MonoBehaviour
                 Inventory[previousIndex], previousIndex, Inventory, iconSlots, amountTexts
             );
 
+            CreateItemInstance(previousIndex);
+
             if (Inventory[previousIndex].id != 0) Inventory[previousIndex].itemReference.GetComponent<ItemParam>().item.mouseKey = 0;
             if (Inventory[previousIndex].itemReference != null && previousIndex != selectedHotbar) Inventory[previousIndex].itemReference.SetActive(false);
 
 
-            inventorySlots[previousIndex].color = new Color(1, 1, 1, 0.47f);
+            inventorySlots[previousIndex].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
             accessedUtilitySlot = -1;
             previousIndex = -1;
         }
@@ -429,8 +474,8 @@ public class InventoryManager : MonoBehaviour
                     utility[1].mouseKey = 1;
                 }
 
-                utilitySlot[0].color = new Color(1, 1, 1, 0.47f);
-                utilitySlot[1].color = new Color(1, 1, 1, 0.47f);
+                utilitySlot[0].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
+                utilitySlot[1].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
                 accessedUtilitySlot = -1;
             }
 
@@ -444,6 +489,60 @@ public class InventoryManager : MonoBehaviour
         }
 
         CheckForActiveUtility();
+    }
+
+    public void AdjustItemInDetails()
+    {
+        if (previousIndex != -1)
+        {
+            if (Inventory[previousIndex].itemReference != null) Inventory[previousIndex].itemReference.SetActive(false);
+
+            Exchange(
+                detailItem[0], 0, detailItem, detailImage, detailAmount,
+                Inventory[previousIndex], previousIndex, Inventory, iconSlots, amountTexts
+            );
+
+            CreateItemInstance(previousIndex);
+
+            inventorySlots[previousIndex].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
+
+            previousIndex = -1;
+            CheckForActiveUtility();
+            SetupDetails(detailItem[0]);
+        }
+
+        else if (accessedDetail)
+        {
+            detailObject[0].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
+            accessedDetail = false;
+        }
+
+        else
+        {
+            detailObject[0].color = new Color(1, 1, 1, 1);
+            accessedDetail = true;
+        }
+    }
+
+    void SetupDetails(Item item)
+    {
+        if (item.id != 0)
+        {
+            detailsTexts[0].text = "Name: " + item.name;
+            detailsTexts[1].text = "Type: " + item.itemType.ToString();
+            detailsTexts[2].text = "ID: " + item.id.ToString();
+            detailsTexts[3].text = "Stackable: " + (item.stackable ? "Yes" : "No");
+
+            detailsTexts[4].text = gameItems.items[item.id].about;
+            topDetails.SetActive(true);
+            bottomDetails.SetActive(true);
+        }
+
+        else
+        {
+            topDetails.SetActive(false);
+            bottomDetails.SetActive(false);
+        }
     }
 
     public int ItemIndexOnInventory(int id)
