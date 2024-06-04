@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -6,6 +5,7 @@ public class DoorManager : MonoBehaviour
 {
     public float animationSpeed;
     public Tilemap tilemap;
+    public Sprite emptySprite;
     public Vector3Int[] coordinates;
     public TileBase tile01;
     public TileBase tile02;
@@ -16,14 +16,19 @@ public class DoorManager : MonoBehaviour
     public Trigger trigger;
     public bool doorIsOpened = false;
     public bool isFloor2 = false;
+    public AudioSource doorOpen;
+    Movement movement;
+    MessageManager messageManager;
     Collider2D tempCol;
     InventoryManager inventory;
     GameObject bonine;
 
     void Start()
     {
+        messageManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<MessageManager>();
         inventory = GameObject.FindGameObjectWithTag("GameManager").GetComponent<InventoryManager>();
         bonine = GameObject.FindGameObjectWithTag("Bonine");
+        movement = bonine.GetComponent<Movement>();
         tempCol = new();
     }
 
@@ -41,12 +46,19 @@ public class DoorManager : MonoBehaviour
     public void CheckForKey(int itemID)
     {
         int itemIndex = inventory.ItemIndexOnInventory(itemID);
-        if (itemIndex == -1) return;
+
+        if (itemIndex == -1)
+        {
+            movement.allowMovement = false;
+            messageManager.Edit("Interact", new string[] { "You need a key to open this door." }, new Sprite[] { emptySprite });
+
+            return;
+        }
 
         doorIsOpened = true;
         inventory.RemoveItem(itemIndex);
         if (trigger.isActive) trigger.onTriggerEnter?.Invoke(tempCol);
-        //Play audio
+        doorOpen.Play();
 
         doorInteraction.SetActive(false);
         OpenDoor();

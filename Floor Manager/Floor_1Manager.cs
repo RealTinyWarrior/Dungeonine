@@ -1,23 +1,26 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class Floor_1Manager : MonoBehaviour
 {
     public Sprite[] chatIcons;
     public Vector2[] spawnPoints;
+    public GameObject darkManager;
+    public Transform movableObject;
+    public DoorManager doorManager;
+    public OnInteraction leverInteraction;
+    public GameObject leverObject;
     InventoryManager inventory;
     MessageManager message;
-    ChestManager chestManager;
     float gameStartTimer = 0f;
     Movement bonineMovement;
     EntityManager entityManager;
     bool hasSpawned;
     bool bucketsSpawned;
+    bool hasCompleted = false;
 
     void Start()
     {
         entityManager = GameObject.FindGameObjectWithTag("EntityManager").GetComponent<EntityManager>();
-        chestManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<ChestManager>();
         GameObject bonine = GameObject.FindGameObjectWithTag("Bonine");
         bonineMovement = bonine.GetComponent<Movement>();
         inventory = GetComponent<InventoryManager>();
@@ -25,10 +28,25 @@ public class Floor_1Manager : MonoBehaviour
         bonineMovement.allowMovement = false;
 
         inventory.LoadUserInventory();
+
+        if (PlayerPrefs.GetInt("LevelsUnlocked", 1) > 1)
+        {
+            bonine.transform.position = new Vector2(15.6f, 10.2f);
+            movableObject.position = new Vector2(9.6f, -4.55f);
+            bonineMovement.allowMovement = true;
+            leverInteraction.onClick.Invoke(leverObject);
+            darkManager.SetActive(false);
+            hasCompleted = true;
+
+            doorManager.doorInteraction.SetActive(false);
+            doorManager.doorIsOpened = true;
+            doorManager.OpenDoor();
+        }
     }
 
     void Update()
     {
+        if (hasCompleted) return;
         if (gameStartTimer < 6.5f && gameStartTimer >= 0) gameStartTimer += Time.deltaTime;
 
         else if (gameStartTimer != -1)
@@ -46,20 +64,20 @@ public class Floor_1Manager : MonoBehaviour
 
                 "<icon>", "0",
                 "Look at the wardrobe at the corner, you might find something useful there.",
-                "There are many.. evil robots here, so be safe, you'd need a weapon to destroyl them."
+                "There are many.. evil robots here, so be safe, you'd need a weapon to destroy them."
             }, chatIcons);
 
             gameStartTimer = -1;
         }
 
-        if (message.GetResolved("There are many.. evil robots here, so be safe, you'd need a weapon to destroyl them.")) bonineMovement.allowMovement = true;
+        if (message.GetResolved("There are many.. evil robots here, so be safe, you'd need a weapon to destroy them.")) bonineMovement.allowMovement = true;
         if (message.GetResolved("I'll let you figure that out on your own.")) bonineMovement.allowMovement = true;
         if (message.GetResolved("Good luck on the next floor.")) bonineMovement.allowMovement = true;
     }
 
     public void SpawnW0RMOnCarpet()
     {
-        if (hasSpawned) return;
+        if (hasSpawned || hasCompleted) return;
 
         foreach (Vector2 point in spawnPoints)
         {
@@ -76,6 +94,7 @@ public class Floor_1Manager : MonoBehaviour
 
     public void MasterTalk02()
     {
+        if (hasCompleted) return;
         bonineMovement.allowMovement = false;
 
         message.Edit("Master", new string[] {
@@ -86,6 +105,7 @@ public class Floor_1Manager : MonoBehaviour
 
     public void MasterTalk03()
     {
+        if (hasCompleted) return;
         bonineMovement.allowMovement = false;
 
         message.Edit("Master", new string[] {
@@ -96,6 +116,7 @@ public class Floor_1Manager : MonoBehaviour
 
     public void SpawnBuckets()
     {
+        if (hasCompleted) return;
         if (bucketsSpawned) return;
         GameObject bucket01 = entityManager.Spawn(EntityCode.Bucket, new Vector2(-7.2f, 11.5f));
         GameObject bucket02 = entityManager.Spawn(EntityCode.Bucket, new Vector2(-5f, 9));

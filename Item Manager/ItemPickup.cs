@@ -26,11 +26,11 @@ public class ItemPickup : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D col)
     {
-        if (col.CompareTag("BonineHitbox")) hasCollided = true;
+        if (col.CompareTag("Bonine")) hasCollided = true;
     }
 
     void OnTriggerExit2D(Collider2D col)
     {
-        if (col.CompareTag("BonineHitbox")) hasCollided = false;
+        if (col.CompareTag("Bonine")) hasCollided = false;
     }
 }

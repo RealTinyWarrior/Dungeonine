@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,6 +13,8 @@ public class InventoryManager : MonoBehaviour
     [HideInInspector] public Item[] chest;
     [HideInInspector] public Item[] utility;
     public float attackDelay = 0.5f;
+    public GameObject chestObject;
+    public GameObject pausePanel;
     public GameObject itemPrefab;
     public RectTransform selectIcon;
     public Sprite emptyItem;
@@ -37,12 +41,12 @@ public class InventoryManager : MonoBehaviour
     Transform bonineTransform;
     GameItems gameItems;
     int previousIndex = -1;
-    int accessedUtilitySlot = -1;
-    int previousChestIndex = -1;
+    [HideInInspector] public int accessedUtilitySlot = -1;
+    [HideInInspector] public int previousChestIndex = -1;
+    List<string> runningCoroutines = new List<string>();
 
     void Add(int id, int index, int amount, Item[] itemArray, Image[] iconArray, TextMeshProUGUI[] textArray)
     {
-        Debug.Log(id + " " + amount);
         Item item = gameItems.GetItem(id);
         item.itemReference = gameItems.items[id].itemReference;
 
@@ -71,6 +75,83 @@ public class InventoryManager : MonoBehaviour
 
     public void RemoveItem(int itemIndex) => Remove(itemIndex, Inventory, iconSlots, amountTexts);
 
+    void DeselectSlot(int index, string type) => StartCoroutine(DeselectCoroutine(index, type));
+
+    IEnumerator DeselectCoroutine(int index, string type)
+    {
+        runningCoroutines.Clear();
+        string uid = GenerateUniqueId();
+        runningCoroutines.Add(uid);
+
+        yield return new WaitForSeconds(5.5f);
+
+        if (runningCoroutines.Contains(uid))
+        {
+            if (type == "inventory")
+            {
+                previousIndex = -1;
+                inventorySlots[index].DOColor(new Color(0.3608f, 0.6824f, 1f, 0.7f), 0.2f);
+            }
+
+            if (type == "chest")
+            {
+                previousChestIndex = -1;
+                chestSlots[index].DOColor(new Color(1, 1, 1, 0.1765f), 0.2f);
+            }
+
+            if (type == "utility")
+            {
+                accessedUtilitySlot = -1;
+                utilitySlot[index].DOColor(new Color(0.3608f, 0.6824f, 1f, 0.7f), 0.2f);
+            }
+
+            if (type == "details")
+            {
+                detailObject[index].DOColor(new Color(0.3608f, 0.6824f, 1f, 0.7f), 0.2f);
+            }
+        }
+    }
+
+    void ResetSelection()
+    {
+        if (accessedUtilitySlot != -1)
+        {
+            utilitySlot[accessedUtilitySlot].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
+            accessedUtilitySlot = -1;
+        }
+
+        if (previousChestIndex != -1)
+        {
+            chestSlots[previousChestIndex].color = new Color(1, 1, 1, 0.1765f);
+            previousChestIndex = -1;
+        }
+
+        if (previousIndex != -1)
+        {
+            inventorySlots[previousIndex].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
+            previousIndex = -1;
+        }
+
+        if (accessedDetail)
+        {
+            detailObject[0].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
+            accessedDetail = false;
+        }
+    }
+
+    string GenerateUniqueId()
+    {
+        string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        string randomString = "";
+
+        for (int i = 0; i < 6; i++)
+        {
+            randomString += alphabet[Random.Range(0, alphabet.Length)];
+        }
+
+        return randomString;
+    }
+
     void Awake()
     {
         bonineTransform = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Transform>();
@@ -93,12 +174,24 @@ public class InventoryManager : MonoBehaviour
     void Update()
     {
         if (delay > 0) delay -= Time.deltaTime;
+        if (pausePanel.activeSelf) return;
 
+        bool l2 = Input.GetKeyDown(KeyCode.JoystickButton4);
+        bool r2 = Input.GetKeyDown(KeyCode.JoystickButton5);
         int oldSelectedPosition = selectedHotbar;
         float mouseData = Input.mouseScrollDelta.y;
 
-        if (mouseData > 0) selectedHotbar += 1;
-        else if (mouseData < 0) selectedHotbar -= 1;
+        if (l2 == false && r2 == false)
+        {
+            if (mouseData > 0) selectedHotbar += 1;
+            else if (mouseData < 0) selectedHotbar -= 1;
+        }
+
+        else
+        {
+            if (l2) selectedHotbar -= 1;
+            else if (r2) selectedHotbar += 1;
+        }
 
         if (selectedHotbar > 4) selectedHotbar = 0;
         else if (selectedHotbar < 0) selectedHotbar = 4;
@@ -193,11 +286,57 @@ public class InventoryManager : MonoBehaviour
         itemObject.timer = timer;
         itemObject.id = itemID;
 
-        createdItem.GetComponent<Rigidbody2D>().velocity = initialForce;
+        if (initialForce.x != 0 && initialForce.y != 0) createdItem.GetComponent<Knockback>().ApplyKnockback(initialForce, 1.4f, 0.6f, true);
     }
 
     public void ExchangeItem(int currentIndex)
     {
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            if (chestObject.activeSelf)
+            {
+                bool hasRemovedObject = false;
+
+                for (int i = 0; i < chest.Length; i++)
+                {
+                    if (chest[i].id == Inventory[currentIndex].id && Inventory[currentIndex].stackable)
+                    {
+                        if (!hasRemovedObject && Inventory[currentIndex].itemReference != null)
+                        {
+                            Inventory[currentIndex].itemReference.SetActive(false);
+                            hasRemovedObject = true;
+                        }
+
+                        chestAmount[i].text = (chest[i].amount + Inventory[currentIndex].amount).ToString();
+                        chest[i].amount = chest[i].amount + Inventory[currentIndex].amount;
+                        Remove(currentIndex, Inventory, iconSlots, amountTexts);
+
+                        break;
+                    }
+                }
+
+                for (int i = 0; i < chest.Length; i++)
+                {
+                    if (chest[i].id == 0)
+                    {
+                        if (!hasRemovedObject && Inventory[currentIndex].itemReference != null)
+                        {
+                            Inventory[currentIndex].itemReference.SetActive(false);
+                            hasRemovedObject = true;
+                        }
+
+                        Add(Inventory[currentIndex].id, i, Inventory[currentIndex].amount, chest, chestIcons, chestAmount);
+                        Remove(currentIndex, Inventory, iconSlots, amountTexts);
+
+                        break;
+                    }
+                }
+            }
+
+            ResetSelection();
+            return;
+        }
+
         if (previousIndex == -1)
         {
             if (previousChestIndex != -1)
@@ -274,6 +413,7 @@ public class InventoryManager : MonoBehaviour
 
             else
             {
+                DeselectSlot(currentIndex, "inventory");
                 inventorySlots[currentIndex].color = new Color(1, 1, 1);
                 previousIndex = currentIndex;
             }
@@ -283,6 +423,20 @@ public class InventoryManager : MonoBehaviour
         {
             if (previousIndex == currentIndex)
             {
+                if (chestObject.activeSelf && Inventory[currentIndex].stackable)
+                {
+                    for (int i = 0; i < chest.Length; i++)
+                    {
+                        if (chest[i].id == Inventory[currentIndex].id)
+                        {
+                            Inventory[currentIndex].amount += chest[i].amount;
+                            Remove(i, chest, chestIcons, chestAmount);
+                        }
+
+                        amountTexts[currentIndex].text = Inventory[currentIndex].amount.ToString();
+                    }
+                }
+
                 inventorySlots[previousIndex].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
                 previousIndex = -1;
 
@@ -322,10 +476,45 @@ public class InventoryManager : MonoBehaviour
 
     public void AccessChest(int slot)
     {
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            if (hasStorage)
+            {
+                AddItemOnBonine((ItemCode)chest[slot].id, chest[slot].amount);
+                Remove(slot, chest, chestIcons, chestAmount);
+            }
+
+            ResetSelection();
+            return;
+        }
+
         if (previousChestIndex != -1)
         {
             if (slot == previousChestIndex)
             {
+                if (chest[previousChestIndex].stackable)
+                {
+                    for (int i = 0; i < chest.Length; i++)
+                    {
+                        if (chest[i].id == chest[previousChestIndex].id && i != previousChestIndex)
+                        {
+                            chest[previousChestIndex].amount += chest[i].amount;
+                            Remove(i, chest, chestIcons, chestAmount);
+                        }
+                    }
+
+                    for (int i = 0; i < Inventory.Length; i++)
+                    {
+                        if (Inventory[i].id == chest[previousChestIndex].id)
+                        {
+                            chest[previousChestIndex].amount += Inventory[i].amount;
+                            Remove(i, Inventory, iconSlots, amountTexts);
+                        }
+                    }
+
+                    chestAmount[previousChestIndex].text = chest[previousChestIndex].amount.ToString();
+                }
+
                 chestSlots[previousChestIndex].color = new Color(1, 1, 1, 0.1765f);
                 previousChestIndex = -1;
                 return;
@@ -379,6 +568,7 @@ public class InventoryManager : MonoBehaviour
 
         else
         {
+            DeselectSlot(slot, "chest");
             previousChestIndex = slot;
             chestSlots[slot].color = new Color(1, 1, 1, 1);
         }
@@ -481,6 +671,7 @@ public class InventoryManager : MonoBehaviour
 
             else
             {
+                DeselectSlot(slotNumber, "utility");
                 accessedUtilitySlot = slotNumber;
 
                 previousIndex = -1;
@@ -519,6 +710,8 @@ public class InventoryManager : MonoBehaviour
 
         else
         {
+            DeselectSlot(0, "details");
+
             detailObject[0].color = new Color(1, 1, 1, 1);
             accessedDetail = true;
         }
@@ -607,6 +800,7 @@ public class InventoryManager : MonoBehaviour
         {
             Item item = gameItems.items[Inventory[index].id];
 
+            item.itemObject.SetActive(false);
             item.itemReference = Instantiate(item.itemObject, bonineTransform);
             ItemParam itemParam = item.itemReference.AddComponent<ItemParam>();
 
@@ -615,6 +809,7 @@ public class InventoryManager : MonoBehaviour
             appendedID.Add(Inventory[index].id);
 
             if (index != selectedHotbar) item.itemReference.SetActive(false);
+            else item.itemReference.SetActive(true);
         }
     }
 

@@ -19,13 +19,11 @@ public class W0RM : MonoBehaviour
     public float digRange = 4f;
     public float digSpeed = 3f;
     public float digCooldown = 1.5f;
+    public AudioSource diggingAudio;
     Animator animator;
     NavMeshAgent agent;
-    Health health;
     BonineHealth bonineHealth;
     Movement movement;
-    EffectManager effect;
-    HitEffect bonineHit;
     SpriteRenderer spriteRenderer;
     GameObject bonine;
     Transform bonineTransform;
@@ -56,15 +54,12 @@ public class W0RM : MonoBehaviour
 
     void Start()
     {
-        bonineTransform = GameObject.FindGameObjectWithTag("BonineHitbox").GetComponent<Transform>();
-        effect = GameObject.FindGameObjectWithTag("EffectManager").GetComponent<EffectManager>();
+        bonineTransform = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Transform>();
         bonine = GameObject.FindGameObjectWithTag("Bonine");
         movement = bonine.GetComponent<Movement>();
         bonineHealth = bonine.GetComponent<BonineHealth>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        bonineHit = bonine.GetComponent<HitEffect>();
         animator = GetComponent<Animator>();
-        health = GetComponent<Health>();
 
         agent = GetComponent<NavMeshAgent>();
         agent.updateRotation = false;
@@ -92,22 +87,26 @@ public class W0RM : MonoBehaviour
     {
         while (true)
         {
-            RaycastHit2D bonineRay = Physics2D.Raycast(transform.position, (bonineTransform.position - transform.position).normalized);
+            RaycastHit2D bonineRay = Physics2D.Raycast(transform.position, (new Vector2(bonineTransform.position.x, bonineTransform.position.y - 0.4f) - (Vector2)transform.position).normalized);
+
             float distance = Vector2.Distance(bonineTransform.position, transform.position);
             bool isInView = distance <= viewRange;
             digGizmos = bonineRay.point;
 
-            if (bonineRay.distance <= digRange && digTimer >= digDelay && (bonineRay.collider.CompareTag("Bonine") || bonineRay.collider.CompareTag("BonineHitbox")) && !movement.isDead)
+            if (bonineRay.distance <= digRange && digTimer >= digDelay && bonineRay.collider.CompareTag("Bonine") && !movement.isDead)
             {
+                StartCoroutine(StartDigAudio());
                 animator.speed = 1.2f / digSpeed;
                 string direction = (transform.InverseTransformPoint(bonineTransform.position).x < 0) ? "Left" : "Right";
-                Vector2 staticPosition = new Vector2(bonineTransform.position.x, bonineTransform.position.y);
+                Vector2 staticPosition = new(bonineTransform.position.x, bonineTransform.position.y);
                 PlayDigAnimation(direction);
 
                 digTimer = 0f;
                 isActive = false;
                 agent.isStopped = true;
+                agent.enabled = false;
                 yield return new WaitForSeconds(digSpeed);
+                diggingAudio.Stop();
                 spriteRenderer.color = new Color(1, 1, 1, 0);
 
                 transform.position = staticPosition;
@@ -119,10 +118,13 @@ public class W0RM : MonoBehaviour
                 Instantiate(knockbackObject, transform.position, Quaternion.identity);
                 yield return new WaitForSeconds(digCooldown);
                 animator.speed = 1;
+                agent.enabled = true;
                 agent.isStopped = false;
 
                 StartCoroutine(StopW0RM());
                 ChangeAnimationState(idleAnimation);
+
+
             }
 
             else if (doWalk && isInView && isActive)
@@ -251,7 +253,7 @@ public class W0RM : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D col)
     {
-        if (col.CompareTag("BonineHitbox") && isActive)
+        if (col.CompareTag("Bonine") && isActive)
         {
             isHitting = true;
             damageTimer = 0;
@@ -260,7 +262,7 @@ public class W0RM : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D col)
     {
-        if (col.CompareTag("BonineHitbox")) isHitting = false;
+        if (col.CompareTag("Bonine")) isHitting = false;
     }
 
     void OnDrawGizmos()
@@ -270,5 +272,11 @@ public class W0RM : MonoBehaviour
 
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(transform.position, moveGizmos);
+    }
+
+    IEnumerator StartDigAudio()
+    {
+        yield return new WaitForSeconds(0.4f);
+        diggingAudio.Play();
     }
 }

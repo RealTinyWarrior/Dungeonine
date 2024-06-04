@@ -2,6 +2,7 @@
 public class Chest
 {
     public int id;
+    public string name;
     public ItemID[] items;
 
 }

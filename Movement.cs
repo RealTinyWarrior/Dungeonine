@@ -4,11 +4,14 @@ public class Movement : MonoBehaviour
 {
     [HideInInspector] public bool isUsedByKnockback;
     Rigidbody2D rb;
+    GlowManager glowManager;
     public Vector2 movement;
     Animator animator;
     public float speed = 2;
     public bool allowMovement = true;
     public bool isDead = false;
+    public AudioSource walkingAudio;
+    bool isPlayingAudio = false;
 
     [HideInInspector]
     public enum Animation
@@ -29,6 +32,7 @@ public class Movement : MonoBehaviour
 
     void Start()
     {
+        glowManager = GetComponent<GlowManager>();
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
     }
@@ -37,6 +41,9 @@ public class Movement : MonoBehaviour
     {
         if (!allowMovement || isDead)
         {
+            if (isPlayingAudio) walkingAudio.Stop();
+            isPlayingAudio = false;
+
             ChangeAnimationState(idleState);
             movement = Vector2.zero;
             return;
@@ -47,12 +54,18 @@ public class Movement : MonoBehaviour
 
         if (rotationTimer > 0)
         {
+            if (isPlayingAudio) walkingAudio.Stop();
+            isPlayingAudio = false;
+
             rotationTimer -= Time.deltaTime;
             return;
         }
 
         if (movement.x != 0 || movement.y != 0)
         {
+            if (!isPlayingAudio) walkingAudio.Play();
+            isPlayingAudio = true;
+
             if (movement.x > 0)
             {
                 ChangeAnimationState(Animation.Bonine_Walk_Right);
@@ -75,7 +88,14 @@ public class Movement : MonoBehaviour
             }
         }
 
-        else ChangeAnimationState(idleState);
+        else
+        {
+            ChangeAnimationState(idleState);
+            if (isPlayingAudio) walkingAudio.Stop();
+
+            isPlayingAudio = false;
+        }
+
         movement.Normalize();
     }
 
@@ -93,5 +113,7 @@ public class Movement : MonoBehaviour
 
         animator.Play(newState.ToString());
         currentState = newState;
+
+        if (glowManager != null) glowManager.ApplyChangeInGlow((int)currentState);
     }
 }

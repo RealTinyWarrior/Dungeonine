@@ -66,7 +66,7 @@ public class LaserCast : MonoBehaviour
 
         foreach (RaycastHit2D rayHit in ray)
         {
-            if (!hasHitObsticle) return;
+            if (!hasHitObsticle) break;
             if (rayHit.collider.CompareTag(target))
             {
                 if (rayHit.distance < obsticleLength)

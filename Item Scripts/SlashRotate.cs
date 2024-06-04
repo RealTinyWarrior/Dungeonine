@@ -5,8 +5,12 @@ public class SlashRotate : MonoBehaviour
     public float activeFor = 0.2f;
     public GameObject slashChild;
     public Transform maskTransform;
+    public AudioSource slashAudio;
+    public int minEnergyCost = 2;
+    public int maxEnergyCost = 5;
+    BonineEnergy bonineEnergy;
     InventoryManager inventory;
-    Movement bonineMovement;
+    GameManager gameManager;
     RotateOnDegree rotateOnDegree;
     GameObject bonine;
     Camera mainCamera;
@@ -15,38 +19,21 @@ public class SlashRotate : MonoBehaviour
 
     void Start()
     {
-        inventory = GameObject.FindGameObjectWithTag("GameManager").GetComponent<InventoryManager>();
+        GameObject gameManagerObject = GameObject.FindGameObjectWithTag("GameManager");
+        item = GetComponent<ItemParam>().item;
+
+        rotateOnDegree = gameManagerObject.GetComponent<RotateOnDegree>();
+        inventory = gameManagerObject.GetComponent<InventoryManager>();
+        gameManager = gameManagerObject.GetComponent<GameManager>();
         maskTransform.localPosition = new Vector2(0.551f, -1.1f);
         bonine = GameObject.FindGameObjectWithTag("Bonine");
-        rotateOnDegree = GameObject.FindGameObjectWithTag("GameManager").GetComponent<RotateOnDegree>();
+        bonineEnergy = bonine.GetComponent<BonineEnergy>();
         mainCamera = Camera.main;
         activeTimer = activeFor;
-
-
-        bonineMovement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
-        item = GetComponent<ItemParam>().item;
     }
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(item.mouseKey) && inventory.delay <= 0)
-        {
-            Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 direction = (mousePosition - bonine.transform.position).normalized;
-            maskTransform.localPosition = new Vector2(0.551f, -1.1f);
-
-            float degree = Mathf.Atan2(direction.y, direction.x) * 57.295779f;
-            if (degree < 0) degree = 360 - Mathf.Abs(degree);
-
-            rotateOnDegree.Rotate(degree, inventory.attackDelay);
-
-            transform.rotation = Quaternion.Euler(0, 0, degree);
-            slashChild.SetActive(true);
-            activeTimer = 0;
-
-            inventory.AddGlobalDelay();
-        }
-
         if (activeTimer < activeFor)
         {
             activeTimer += Time.deltaTime;
@@ -56,6 +43,56 @@ public class SlashRotate : MonoBehaviour
             {
                 slashChild.SetActive(false);
                 maskTransform.localPosition = new Vector2(0.551f, -1.1f);
+            }
+        }
+
+        if (Input.GetMouseButtonDown(item.mouseKey))
+        {
+            if (gameManager.UseUtility())
+            {
+                slashAudio.Play();
+
+                Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+                Vector2 direction = (mousePosition - bonine.transform.position).normalized;
+                maskTransform.localPosition = new Vector2(0.551f, -1.1f);
+
+                float degree = Mathf.Atan2(direction.y, direction.x) * 57.295779f;
+                if (degree < 0) degree = 360 - Mathf.Abs(degree);
+
+                rotateOnDegree.Rotate(degree, inventory.attackDelay);
+
+                transform.rotation = Quaternion.Euler(0, 0, degree);
+                slashChild.SetActive(true);
+                activeTimer = 0;
+
+                bonineEnergy.DecreaseEnergy(Random.Range(minEnergyCost, maxEnergyCost + 1));
+                inventory.AddGlobalDelay();
+            }
+        }
+
+        else if (item.mouseKey == 0)
+        {
+            if (gameManager.UseUtility())
+            {
+                float horizontal = Input.GetAxis("RightStickHorizontal");
+                float vertical = Input.GetAxis("RightStickVertical");
+                if (horizontal == 0 && vertical == 0) return;
+
+                slashAudio.Play();
+                Vector2 direction = new(horizontal, vertical);
+                maskTransform.localPosition = new Vector2(0.551f, -1.1f);
+
+                float degree = Mathf.Atan2(direction.y, direction.x) * 57.295779f;
+                if (degree < 0) degree = 360 - Mathf.Abs(degree);
+
+                rotateOnDegree.Rotate(degree, inventory.attackDelay);
+
+                transform.rotation = Quaternion.Euler(0, 0, degree);
+                slashChild.SetActive(true);
+                activeTimer = 0;
+
+                bonineEnergy.DecreaseEnergy(Random.Range(minEnergyCost, maxEnergyCost + 1));
+                inventory.AddGlobalDelay();
             }
         }
     }

@@ -3,15 +3,15 @@ using DG.Tweening;
 
 public class InventoryPopup : MonoBehaviour
 {
-    public float top;
-    public float bottom;
+    public float startValue;
+    public float endValue;
     bool isActive = false;
     RectTransform rectTransform;
     public float popupSpeed = 0.5f;
 
     void Update()
     {
-        if (Input.GetKey(KeyCode.V)) Popup();
+        if (Input.GetKeyDown(KeyCode.V)) Popup();
     }
 
     void Start()
@@ -24,13 +24,13 @@ public class InventoryPopup : MonoBehaviour
         if (isActive)
         {
             isActive = false;
-            rectTransform.DOAnchorPosY(bottom, popupSpeed);
+            rectTransform.DOAnchorPosY(startValue, popupSpeed);
         }
 
         else
         {
             isActive = true;
-            rectTransform.DOAnchorPosY(top, popupSpeed);
+            rectTransform.DOAnchorPosY(endValue, popupSpeed);
         }
     }
 }

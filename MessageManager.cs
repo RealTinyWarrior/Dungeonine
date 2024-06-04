@@ -10,6 +10,7 @@ public class MessageManager : MonoBehaviour
     public TextMeshProUGUI chatNameField;
     public TextMeshProUGUI textField;
     public AudioSource clickAudio;
+    public AudioSource deepClick;
     public Image userIconField;
     public GameObject messageObject;
     public GameObject choiceObject;
@@ -21,7 +22,7 @@ public class MessageManager : MonoBehaviour
     string[] texts;
     Sprite[] icons;
 
-    public void Start() => bonineMovement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
+    void Start() => bonineMovement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
 
     public void Edit(string name, string[] userTexts, Sprite[] userIcons)
     {
@@ -50,6 +51,8 @@ public class MessageManager : MonoBehaviour
 
     public void NextButton()
     {
+        clickAudio.Play();
+
         if (texts.Length - 1 <= position)
         {
             resolved = texts[position];
@@ -114,6 +117,7 @@ public class MessageManager : MonoBehaviour
 
     public void NextButtonYes()
     {
+        clickAudio.Play();
         question = tempQuestion;
         answer = true;
 
@@ -123,6 +127,7 @@ public class MessageManager : MonoBehaviour
 
     public void NextButtonNo()
     {
+        deepClick.Play();
         question = tempQuestion;
         answer = false;
 

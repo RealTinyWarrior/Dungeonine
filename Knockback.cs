@@ -5,7 +5,9 @@ public class Knockback : MonoBehaviour
 {
     private Rigidbody2D rb;
     private Vector2 originalVelocity;
+    public GameObject message;
     public bool isBonine;
+    public bool isKnocking;
     Movement movement;
 
     void Start()
@@ -14,9 +16,12 @@ public class Knockback : MonoBehaviour
         if (isBonine) movement = GetComponent<Movement>();
     }
 
-    public void ApplyKnockback(Vector2 knockbackDirection, float knockbackStrength, float knockbackDuration)
+    public void ApplyKnockback(Vector2 knockbackDirection, float knockbackStrength, float knockbackDuration, bool instantStart = false)
     {
+        if (instantStart) rb = GetComponent<Rigidbody2D>();
+
         originalVelocity = rb.velocity;
+        isKnocking = true;
         StartCoroutine(KnockbackCoroutine(knockbackDirection * knockbackStrength, knockbackDuration));
     }
 
@@ -40,10 +45,11 @@ public class Knockback : MonoBehaviour
 
         if (isBonine)
         {
-            movement.allowMovement = true;
+            if (!message.activeSelf) movement.allowMovement = true;
             movement.isUsedByKnockback = false;
         }
 
         rb.velocity = Vector2.zero;
+        isKnocking = false;
     }
 }

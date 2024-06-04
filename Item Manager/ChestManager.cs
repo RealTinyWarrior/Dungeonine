@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,16 +7,22 @@ public class ChestManager : MonoBehaviour
 {
     InventoryManager inventory;
     GameItems gameItems;
+    GameManager gameManager;
     bool doLoadChest = true;
     public GameObject chestObject;
+    public TextMeshProUGUI chestName;
     public Image chestBackground;
     public int floor;
     public Chest[] chest;
+    public AudioSource chestOpen;
+    public AudioSource chestClose;
     int openedChestID = -1;
     Movement movement;
+    [HideInInspector] public bool hasOpened = false;
 
     void Start()
     {
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         movement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
         inventory = GetComponent<InventoryManager>();
         gameItems = GetComponent<GameItems>();
@@ -34,8 +41,13 @@ public class ChestManager : MonoBehaviour
 
     public void OpenChestID(int id)
     {
+        ChangeChestName(chest[id].name);
         movement.allowMovement = false;
+        gameManager.canPause = false;
         openedChestID = id;
+        hasOpened = true;
+
+        chestOpen.Play();
 
         if (doLoadChest)
         {
@@ -73,6 +85,11 @@ public class ChestManager : MonoBehaviour
 
     public void ExitChestID()
     {
+        if (inventory.accessedUtilitySlot != -1) inventory.chestSlots[inventory.accessedUtilitySlot].color = new Color(1, 1, 1, 0.1765f);
+        inventory.accessedUtilitySlot = -1;
+        hasOpened = false;
+        chestClose.Play();
+
         movement.allowMovement = true;
         int id = openedChestID;
         chestObject.SetActive(false);
@@ -92,6 +109,7 @@ public class ChestManager : MonoBehaviour
         }
 
         openedChestID = -1;
+        gameManager.canPause = true;
     }
 
     public void SaveChestData()
@@ -135,8 +153,6 @@ public class ChestManager : MonoBehaviour
         }
     }
 
-    public void ChangeChestSprite(Sprite sprite)
-    {
-        chestBackground.sprite = sprite;
-    }
+    void ChangeChestSprite(Sprite sprite) => chestBackground.sprite = sprite;
+    void ChangeChestName(string name) => chestName.text = name;
 }

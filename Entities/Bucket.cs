@@ -8,6 +8,7 @@ public class Bucket : MonoBehaviour
     public float viewDistance;
     public int startDamage;
     public int endDamage;
+    public float damageDelay = 0.3f;
     public float knockbackStrength = 2;
     public float knockbackDuration = 0.2f;
     Animator animator;
@@ -17,6 +18,22 @@ public class Bucket : MonoBehaviour
     Knockback knockback;
     Knockback bonineKnockback;
     Movement movement;
+    bool isColliding;
+    float timer;
+
+    void Update()
+    {
+        if (isColliding)
+        {
+            if (timer >= damageDelay)
+            {
+                Damage();
+                timer = 0;
+            }
+
+            else timer += Time.deltaTime;
+        }
+    }
 
     void Start()
     {
@@ -30,6 +47,7 @@ public class Bucket : MonoBehaviour
         agent.updateRotation = false;
         agent.updateUpAxis = false;
         agent.speed = speed;
+        timer = damageDelay;
 
         StartCoroutine(FindPath());
         animator.speed = speed / 2.8f;
@@ -41,7 +59,8 @@ public class Bucket : MonoBehaviour
         {
             if (Vector2.Distance(bonine.transform.position, transform.position) <= viewDistance && !movement.isDead)
             {
-                agent.SetDestination(bonine.transform.position);
+                if (agent.enabled) agent.SetDestination(bonine.transform.position);
+
                 yield return new WaitForSeconds(0.25f);
             }
 
@@ -63,13 +82,36 @@ public class Bucket : MonoBehaviour
         }
     }
 
+    void Damage()
+    {
+        Vector2 knockbackDirection = ((Vector2)(bonine.transform.position - transform.position)).normalized;
+        Vector2 direction = ((Vector2)(transform.position - bonine.transform.position)).normalized;
+
+        if (knockbackDirection.x == 0 && knockbackDirection.y == 0)
+        {
+            knockbackDirection = Random.insideUnitCircle.normalized;
+            direction = new Vector2(-knockbackDirection.x, -knockbackDirection.y);
+        }
+
+        bonineHealth.Damage(Random.Range(startDamage, endDamage));
+        if (!knockback.isKnocking) knockback.ApplyKnockback(direction, 6.2f, 0.9f);
+        bonineKnockback.ApplyKnockback(knockbackDirection, knockbackStrength, knockbackDuration);
+    }
+
     void OnTriggerEnter2D(Collider2D col)
     {
-        if (col.CompareTag("BonineHitbox"))
+        if (col.CompareTag("Bonine"))
         {
-            bonineHealth.Damage(Random.Range(startDamage, endDamage));
-            knockback.ApplyKnockback((Vector2)(transform.position - bonine.transform.position), 5, 0.7f);
-            bonineKnockback.ApplyKnockback((Vector2)(bonine.transform.position - transform.position), knockbackStrength, knockbackDuration);
+            isColliding = true;
+            Damage();
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D col)
+    {
+        if (col.CompareTag("Bonine"))
+        {
+            isColliding = false;
         }
     }
 }

@@ -10,15 +10,16 @@ public class GameStartOpacity : MonoBehaviour
     float existTimer = 0;
     float startTimer = 0;
     public RectTransform title;
-    Movement bonineMovement;
+    GameManager gameManager;
     Image fadeImage;
     float parentTimer = 0f;
     bool isDone = false;
 
     void Start()
     {
-        bonineMovement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         fadeImage = GetComponent<Image>();
+        gameManager.canPause = false;
     }
 
     void Update()
@@ -40,8 +41,8 @@ public class GameStartOpacity : MonoBehaviour
             if (startTimer < fadeTime) startTimer += Time.deltaTime;
             else
             {
-
-                gameObject.GetComponent<RectTransform>().DOAnchorPos(new Vector2(0, 600), 1f);
+                gameManager.canPause = true;
+                gameObject.GetComponent<RectTransform>().DOAnchorPos(new Vector2(0, 800), 1f);
             }
         }
     }

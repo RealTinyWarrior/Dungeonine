@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.SceneManagement;
+using Unity.VisualScripting;
 
 public class Floor_2Manager : MonoBehaviour
 {
@@ -8,10 +9,13 @@ public class Floor_2Manager : MonoBehaviour
     public DoorManager doormanager;
     public Vector2[] moreBuckets;
     public AudioSource music;
+    public bool hasPulledLever;
+    public GameObject darkManager01;
     MessageManager messageManager;
     EntityManager entityManager;
     Movement movement;
     InventoryManager inventory;
+    GameManager pauseManager;
 
     void Update()
     {
@@ -20,20 +24,9 @@ public class Floor_2Manager : MonoBehaviour
         if (messageManager.GetResolved("Quick RUN!! Close the gates by flicking the lever, run!"))
         {
             music.Play();
-
-            for (int i = 0; i < 25; i++)
-            {
-                Bucket bucket = entityManager.Spawn(EntityCode.Bucket, new Vector2(6.5f, 2)).GetComponent<Bucket>();
-                bucket.viewDistance = 1000;
-                bucket.speed = 10.5f;
-            }
-
-            for (int i = 0; i < 25; i++)
-            {
-                Bucket bucket = entityManager.Spawn(EntityCode.Bucket, new Vector2(-5.2f, 2)).GetComponent<Bucket>();
-                bucket.viewDistance = 1000;
-                bucket.speed = 10.5f;
-            }
+            pauseManager.bossFightOngoing = true;
+            darkManager01.SetActive(false);
+            StartCoroutine(SlowlySpawnBuckets());
 
             movement.speed = 6;
             movement.allowMovement = true;
@@ -44,6 +37,7 @@ public class Floor_2Manager : MonoBehaviour
     {
         entityManager = GameObject.FindGameObjectWithTag("EntityManager").GetComponent<EntityManager>();
         GameObject gameManager = GameObject.FindGameObjectWithTag("GameManager");
+        pauseManager = gameManager.GetComponent<GameManager>();
         messageManager = gameManager.GetComponent<MessageManager>();
         inventory = gameManager.GetComponent<InventoryManager>();
         movement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
@@ -66,6 +60,9 @@ public class Floor_2Manager : MonoBehaviour
 
     public void LastMomentConvo()
     {
+        if (hasPulledLever) return;
+
+        hasPulledLever = true;
         movement.allowMovement = false;
         messageManager.Edit("Master", new string[] {
             "Good job!",
@@ -86,16 +83,7 @@ public class Floor_2Manager : MonoBehaviour
         }, chatIcons);
     }
 
-    public void SpawnMoreBuckets(int index)
-    {
-        for (int i = 0; i < 25; i++)
-        {
-            Bucket bucket = entityManager.Spawn(EntityCode.Bucket, moreBuckets[index]).GetComponent<Bucket>();
-            bucket.viewDistance = 1000;
-            bucket.speed = 10f;
-        }
-    }
-
+    public void SpawnMoreBuckets(int index) => StartCoroutine(SpawnBucket(moreBuckets[index]));
     public void SetDoorToClosed() => doormanager.doorIsOpened = true;
 
     public void SaveGame()
@@ -104,5 +92,40 @@ public class Floor_2Manager : MonoBehaviour
 
         inventory.SaveUserInventory();
         SceneManager.LoadScene("MainMenu");
+    }
+
+    IEnumerator SlowlySpawnBuckets()
+    {
+        for (int i = 1; i <= 60; i++)
+        {
+            Bucket bucket = entityManager.Spawn(EntityCode.Bucket_No_Glow, i % 2 == 0 ? new Vector2(6.5f, 3.5f) : new Vector2(-5.2f, 3.5f)).GetComponent<Bucket>();
+            bucket.viewDistance = 1000;
+            bucket.speed = 10.5f;
+
+
+            Health bucketHealth = bucket.GetComponent<Health>();
+            bucket.AddComponent<DestroyObject>().timer = 50;
+            bucketHealth.maxHealth = 100;
+            bucketHealth.health = 100;
+
+            yield return new WaitForSeconds(0.0005f);
+        }
+    }
+
+    IEnumerator SpawnBucket(Vector2 position)
+    {
+        for (int i = 1; i <= 22; i++)
+        {
+            Bucket bucket = entityManager.Spawn(EntityCode.Bucket_No_Glow, position).GetComponent<Bucket>();
+            bucket.viewDistance = 1000;
+            bucket.speed = 10.5f;
+
+            Health bucketHealth = bucket.GetComponent<Health>();
+            bucket.AddComponent<DestroyObject>().timer = 50;
+            bucketHealth.maxHealth = 100;
+            bucketHealth.health = 100;
+
+            yield return new WaitForSeconds(0.003f);
+        }
     }
 }

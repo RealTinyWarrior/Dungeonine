@@ -19,7 +19,7 @@ public class WormDigDamage : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D col)
     {
-        if (col.CompareTag("BonineHitbox"))
+        if (col.CompareTag("Bonine"))
         {
             Vector2 knockbackDirection = (Vector2)(bonine.transform.position - transform.position);
 

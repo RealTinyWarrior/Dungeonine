@@ -6,6 +6,7 @@ public class LaserDamage : MonoBehaviour
     public int minDamage = 3;
     public int maxDamage = 8;
     public float damageDelay = 0.1f;
+    public AudioSource hitAudio;
     BonineHealth bonineHealth;
     bool runCoroutine = false;
 
@@ -20,6 +21,7 @@ public class LaserDamage : MonoBehaviour
         if (col.CompareTag("Bonine"))
         {
             runCoroutine = true;
+            hitAudio.Play();
         }
     }
 
@@ -28,6 +30,7 @@ public class LaserDamage : MonoBehaviour
         if (col.CompareTag("Bonine"))
         {
             runCoroutine = false;
+            hitAudio.Stop();
         }
     }
 
@@ -36,6 +39,7 @@ public class LaserDamage : MonoBehaviour
         while (true)
         {
             if (runCoroutine) bonineHealth.Damage(Random.Range(minDamage, maxDamage));
+
             yield return new WaitForSeconds(damageDelay);
         }
     }

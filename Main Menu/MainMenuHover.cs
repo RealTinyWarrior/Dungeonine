@@ -22,20 +22,21 @@ public class MainMenuHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public GameObject quitPanel;
     public GameObject playPanel;
     public GameObject gameManager;
+    public MainMenuManager mainMenuManager;
 
     public enum Buttons
     {
-        settings,
-        play,
-        floors,
-        newGame,
         quit,
+        newGame,
+        floors,
+        play,
+        settings,
         others,
         exitSettings,
         exitFloors
     }
 
-    [SerializeField] private Buttons button;
+    public Buttons button;
 
     void Start()
     {
@@ -73,12 +74,18 @@ public class MainMenuHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (text != null) text.color = Color.cyan;
         if (button == Buttons.exitFloors || button == Buttons.exitSettings) transform.localScale = new Vector3(1.1f, 1.1f, 1);
-
-        Cursor.SetCursor(pointerCursor, Vector2.zero, CursorMode.Auto);
-        hoverAudio.Play();
+        Cursor.SetCursor(pointerCursor, new Vector2(30, 20), CursorMode.Auto);
+        if (text != null) text.color = Color.cyan;
+        if (hoverAudio.gameObject.activeSelf) hoverAudio.Play();
         hovering = true;
+
+        if (mainMenuManager == null) return;
+        if (mainMenuManager.selectedButton != (int)button) mainMenuManager.texts[mainMenuManager.selectedButton].color = new Color(0.807f, 0.956f, 1);
+        else mainMenuManager.texts[mainMenuManager.selectedButton].color = Color.cyan;
+
+        mainMenuManager.pointerPos.anchoredPosition = new Vector2(mainMenuManager.pointerPos.anchoredPosition.x, 128 + 100 * (int)button);
+        mainMenuManager.selectedButton = (int)button;
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -87,14 +94,14 @@ public class MainMenuHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (button == Buttons.exitFloors || button == Buttons.exitSettings) transform.localScale = new Vector3(1, 1, 1);
 
         hovering = false;
-        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
+        Cursor.SetCursor(defaultCursor, new Vector2(30, 20), CursorMode.Auto);
     }
 
     public void ButtonControl()
     {
         if (clickSound != null) clickSound.GetComponent<AudioSource>().Play();
 
-        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
+        Cursor.SetCursor(defaultCursor, new Vector2(30, 20), CursorMode.Auto);
         hovering = false;
 
         switch (button)

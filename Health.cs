@@ -7,6 +7,7 @@ public class Health : MonoBehaviour
     [HideInInspector] public int health;
     EffectManager effectManager;
     HitEffect hitEffect;
+    public AudioSource hitAudio;
 
     void Start()
     {
@@ -20,19 +21,23 @@ public class Health : MonoBehaviour
         hitEffect.CreateHitffect();
         health -= damage;
 
-        if (health < 0)
+        if (health <= 0)
         {
             health = 0;
+            GameObject.FindGameObjectWithTag("DeathAudio").GetComponent<AudioSource>().Play();
+
             effectManager.Create(deathEffect, 0.5f, (Vector2)transform.position + hitEffect.effectOffset, 1.2f);
             Destroy(gameObject);
         }
+
+        else if (hitAudio != null) hitAudio.Play();
     }
 
     public void Heal(int healing)
     {
         health += healing;
 
-        if (health > maxHealth)
+        if (health >= maxHealth)
         {
             health = maxHealth;
         }
