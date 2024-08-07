@@ -2,7 +2,6 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
-
 public class OnInteraction : MonoBehaviour
 {
     public enum InteractionTypes
@@ -20,13 +19,32 @@ public class OnInteraction : MonoBehaviour
     public GameObject chestObject;
     public GameObject chatObject;
     public InteractionTypes interactionType;
+    GameObject pausePanel;
 
-    void Start() => accessManager = transform.GetChild(0).GetComponent<OnObjectAccess>();
+    void Start()
+    {
+        accessManager = transform.GetChild(0).GetComponent<OnObjectAccess>();
+        pausePanel = GameObject.FindGameObjectWithTag("PauseScreen");
+    }
+
     public void OnMouseDown() => StartCoroutine(OnClickManager());
     void Update()
     {
         if (!accessManager.canAccess) return;
-        if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.JoystickButton0)) StartCoroutine(OnClickManager());
+
+        if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.JoystickButton0))
+        {
+            if (pausePanel == null)
+            {
+                pausePanel = GameObject.FindGameObjectWithTag("PauseScreen");
+                if (pausePanel == null) StartCoroutine(OnClickManager());
+            }
+
+            else if (!pausePanel.activeSelf)
+            {
+                StartCoroutine(OnClickManager());
+            }
+        }
     }
 
     void OnMouseEnter()

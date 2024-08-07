@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,6 +8,7 @@ public class MessageManager : MonoBehaviour
 {
     [HideInInspector] public string question = "";
     [HideInInspector] public bool answer = false;
+    public float typingSpeed = 0.05f;
     public TextMeshProUGUI chatNameField;
     public TextMeshProUGUI textField;
     public AudioSource clickAudio;
@@ -14,6 +16,7 @@ public class MessageManager : MonoBehaviour
     public Image userIconField;
     public GameObject messageObject;
     public GameObject choiceObject;
+    public AudioSource typingAudio;
     string tempQuestion = "";
     Movement bonineMovement;
     string resolved = "";
@@ -21,19 +24,22 @@ public class MessageManager : MonoBehaviour
     int toBeDecreased = 1;
     string[] texts;
     Sprite[] icons;
+    Coroutine typeTextCoroutine;
 
     void Start() => bonineMovement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
 
     public void Edit(string name, string[] userTexts, Sprite[] userIcons)
     {
+        bonineMovement.allowMovement = false;
+        typingAudio.Play();
         chatNameField.text = name;
+        textField.text = "";
         texts = userTexts;
         icons = userIcons;
 
         ChangeIcon(icons[0]);
-        textField.text = texts[position];
-
         messageObject.SetActive(true);
+        StartCoroutine(TypeText(texts[position]));
     }
 
     public bool[] GetAnswer(string questionParam)
@@ -51,6 +57,7 @@ public class MessageManager : MonoBehaviour
 
     public void NextButton()
     {
+        if (choiceObject.activeSelf) return;
         clickAudio.Play();
 
         if (texts.Length - 1 <= position)
@@ -59,6 +66,7 @@ public class MessageManager : MonoBehaviour
             messageObject.SetActive(false);
             bonineMovement.allowMovement = true;
             position = 0;
+            typingAudio.Stop();
 
             toBeDecreased = 1;
         }
@@ -99,9 +107,34 @@ public class MessageManager : MonoBehaviour
                 toBeDecreased = 1;
             }
 
-            textField.text = texts[position];
+            textField.text = "";
+            typingAudio.Play();
+            StartCoroutine(TypeText(texts[position]));
             resolved = texts[position - toBeDecreased];
         }
+    }
+
+    IEnumerator TypeText(string text)
+    {
+        if (typeTextCoroutine != null)
+        {
+            StopCoroutine(typeTextCoroutine);
+        }
+
+        typeTextCoroutine = StartCoroutine(TypeTextCoroutine(text));
+        yield return null;
+    }
+
+    IEnumerator TypeTextCoroutine(string text)
+    {
+        foreach (char c in text)
+        {
+            textField.text += c;
+            yield return new WaitForSeconds(typingSpeed);
+        }
+
+        typingAudio.Stop();
+        typeTextCoroutine = null;
     }
 
     public bool GetResolved(string text)

@@ -45,12 +45,12 @@ public class GameTablet : MonoBehaviour
     {
         if (isOpened)
         {
-            tabletPosition.DOAnchorPos(new Vector2(1500, -413), 0.7f);
+            tabletPosition.DOAnchorPos(new Vector2(540, 127), 0.7f);
             isOpened = false;
             return;
         }
 
-        tabletPosition.DOAnchorPos(new Vector2(831, -413), 0.7f);
+        tabletPosition.DOAnchorPos(new Vector2(-132, 127), 0.7f);
         isOpened = true;
     }
 

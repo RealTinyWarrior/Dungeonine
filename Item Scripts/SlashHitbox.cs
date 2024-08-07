@@ -20,12 +20,6 @@ public class SwordHitbox : MonoBehaviour
             Health health = col.GetComponent<Health>();
             health.Damage(RandomDamage());
         }
-
-        else if (col.CompareTag("Destructable"))
-        {
-            DestructableObject destructableObject = col.GetComponent<DestructableObject>();
-            destructableObject.TakeDamage(RandomDamage());
-        }
     }
 
     int RandomDamage() => Random.Range(minDamage, maxDamage);

@@ -11,6 +11,8 @@ public class Bucket : MonoBehaviour
     public float damageDelay = 0.3f;
     public float knockbackStrength = 2;
     public float knockbackDuration = 0.2f;
+    [HideInInspector] public bool willDespawn = false;
+    [HideInInspector] public float despawnTimer = 0f;
     Animator animator;
     GameObject bonine;
     BonineHealth bonineHealth;
@@ -23,6 +25,8 @@ public class Bucket : MonoBehaviour
 
     void Update()
     {
+        if (despawnTimer > 0f && willDespawn) despawnTimer -= Time.deltaTime;
+
         if (isColliding)
         {
             if (timer >= damageDelay)
@@ -73,9 +77,9 @@ public class Bucket : MonoBehaviour
                     Vector2 randomDirection = Random.insideUnitCircle.normalized;
                     RaycastHit2D ray = Physics2D.Raycast(transform.position, randomDirection, 2.5f);
 
-                    agent.SetDestination(ray.point);
+                    if (despawnTimer >= 0) agent.SetDestination(ray.point);
                     yield return new WaitForSeconds(0.5f);
-                    agent.SetDestination(transform.position);
+                    if (despawnTimer >= 0) agent.SetDestination(transform.position);
 
                 }
             }

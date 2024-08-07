@@ -38,7 +38,7 @@ public class LaserDamage : MonoBehaviour
     {
         while (true)
         {
-            if (runCoroutine) bonineHealth.Damage(Random.Range(minDamage, maxDamage));
+            if (runCoroutine) bonineHealth.Damage(Random.Range(minDamage, maxDamage), damageDelay);
 
             yield return new WaitForSeconds(damageDelay);
         }

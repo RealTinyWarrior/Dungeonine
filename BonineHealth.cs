@@ -21,6 +21,7 @@ public class BonineHealth : MonoBehaviour
     public AudioSource hitAudio;
     public Sprite[] healthIcons;
     public AudioSource[] stopAudio;
+    Coroutine runningCoroutine;
     GlowManager glowManager;
     Animator animator;
     Movement movement;
@@ -35,56 +36,67 @@ public class BonineHealth : MonoBehaviour
         glowManager = GetComponent<GlowManager>();
     }
 
-    public void Damage(int damage)
+    public void Damage(int damage, float rate = 0.02f)
     {
         hitEffect.CreateHitffect();
-        health -= damage;
         hitAudio.Play();
 
-        if (health <= 0)
-        {
-            if (!movement.isDead)
-            {
-                deathAudio.Play();
-                StartCoroutine(PlayDeathMusic());
-                audioMixer.SetFloat("SFXVolume", Mathf.Log10(0.2f) * 20);
+        StartCoroutine(UseHealthCoroutine(health - damage <= 0 ? 0 : health - damage, false, rate));
+    }
 
-                for (int i = 0; i < stopAudio.Length; i++)
-                {
-                    stopAudio[i].Stop();
-                }
+    public void Heal(int healing, float rate = 0.02f) => StartCoroutine(UseHealth(health + healing >= 100 ? 100 : health + healing, true, rate));
+
+    IEnumerator UseHealthCoroutine(int healthVal, bool increase, float rate)
+    {
+        bool condition = increase ? health < healthVal : health > healthVal;
+
+        while (condition)
+        {
+            if (!increase)
+            {
+                health = health - 1 <= 0 ? 0 : health - 1;
+                if (health <= 0) PlayDeathEffect();
             }
 
-            deathScreen.SetActive(true);
-            animator.Play("Bonine_Dead");
-            if (glowManager != null) glowManager.ApplyChangeInGlow(8);
+            else health = health + 1 >= 100 ? 100 : health + 1;
 
-            health = 0;
-            movement.isDead = true;
-            movement.allowMovement = false;
+            healthBar.value = health;
+            healthText.text = health.ToString() + "HP";
+            heartGameObject.sprite = healthIcons[Convert.ToInt32(Math.Ceiling((float)health / 10))];
+            condition = increase ? health < healthVal : health > healthVal;
+            yield return new WaitForSeconds(rate);
         }
-
-        SetHealthOnUI();
     }
 
-    public void Heal(int healing)
+    void PlayDeathEffect()
     {
-        //* set some effects if necessary
-        health += healing;
-
-        if (health >= maxHealth)
+        if (!movement.isDead)
         {
-            health = maxHealth;
+            deathAudio.Play();
+            StartCoroutine(PlayDeathMusic());
+            audioMixer.SetFloat("SFXVolume", Mathf.Log10(0.2f) * 20);
+
+            for (int i = 0; i < stopAudio.Length; i++)
+            {
+                stopAudio[i].Stop();
+            }
         }
 
-        SetHealthOnUI();
+        deathScreen.SetActive(true);
+        animator.Play("Bonine_Dead");
+        if (glowManager != null) glowManager.ApplyChangeInGlow(8);
+
+        health = 0;
+        movement.isDead = true;
+        movement.allowMovement = false;
     }
 
-    void SetHealthOnUI()
+    IEnumerator UseHealth(int healthVal, bool increase, float rate)
     {
-        healthBar.value = health;
-        healthText.text = health.ToString() + "HP";
-        heartGameObject.sprite = healthIcons[Convert.ToInt32(Math.Ceiling((float)health / 10))];
+        if (runningCoroutine != null) StopCoroutine(runningCoroutine);
+
+        runningCoroutine = StartCoroutine(UseHealthCoroutine(healthVal, increase, rate));
+        yield return null;
     }
 
     IEnumerator PlayDeathMusic()

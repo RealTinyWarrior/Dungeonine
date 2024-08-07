@@ -27,8 +27,6 @@ public class Floor_1Manager : MonoBehaviour
         message = GetComponent<MessageManager>();
         bonineMovement.allowMovement = false;
 
-        inventory.LoadUserInventory();
-
         if (PlayerPrefs.GetInt("LevelsUnlocked", 1) > 1)
         {
             bonine.transform.position = new Vector2(15.6f, 10.2f);
@@ -42,37 +40,32 @@ public class Floor_1Manager : MonoBehaviour
             doorManager.doorIsOpened = true;
             doorManager.OpenDoor();
         }
+
+        inventory.LoadUserInventory();
     }
 
     void Update()
     {
         if (hasCompleted) return;
-        if (gameStartTimer < 6.5f && gameStartTimer >= 0) gameStartTimer += Time.deltaTime;
+        if (gameStartTimer < 4.8f && gameStartTimer >= 0) gameStartTimer += Time.deltaTime;
 
         else if (gameStartTimer != -1)
         {
-            bonineMovement.allowMovement = false;
-
             message.Edit("???", new string[] {
-                "Hello, there little one. You look lost.",
+                "Hello there, you look lost.",
 
                 "<icon>", "1",
-                "Oh me? You can call me Master.",
+                "Oh me? You can call me Master. I'm here to assist you.",
 
                 "<name>", "Master",
-                "This is not a safe place, but I can assist you to... survive.",
+                "This dungeon is filled with mysteries and.. robots.",
 
                 "<icon>", "0",
-                "Look at the wardrobe at the corner, you might find something useful there.",
-                "There are many.. evil robots here, so be safe, you'd need a weapon to destroy them."
+                "Look at the wardrobe in the corner, you might find something useful there.",
             }, chatIcons);
 
             gameStartTimer = -1;
         }
-
-        if (message.GetResolved("There are many.. evil robots here, so be safe, you'd need a weapon to destroy them.")) bonineMovement.allowMovement = true;
-        if (message.GetResolved("I'll let you figure that out on your own.")) bonineMovement.allowMovement = true;
-        if (message.GetResolved("Good luck on the next floor.")) bonineMovement.allowMovement = true;
     }
 
     public void SpawnW0RMOnCarpet()
@@ -95,22 +88,9 @@ public class Floor_1Manager : MonoBehaviour
     public void MasterTalk02()
     {
         if (hasCompleted) return;
-        bonineMovement.allowMovement = false;
 
         message.Edit("Master", new string[] {
-            "A puzzle, huh.",
-            "I'll let you figure that out on your own."
-        }, chatIcons);
-    }
-
-    public void MasterTalk03()
-    {
-        if (hasCompleted) return;
-        bonineMovement.allowMovement = false;
-
-        message.Edit("Master", new string[] {
-            "Well done buddy!",
-            "Good luck on the next floor."
+            "A puzzle, huh. I'll let you figure that out on your own."
         }, chatIcons);
     }
 

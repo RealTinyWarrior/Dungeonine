@@ -20,7 +20,7 @@ public class DynamicShadowCaster : MonoBehaviour
 
         for (int i = 0; i < ray.Length; i++)
         {
-            if (!ray[i].collider.CompareTag("Entity") && !ray[i].collider.CompareTag("Bonine"))
+            if (ray[i].collider.CompareTag("Wall"))
             {
                 gizmos = ray[i].point;
 

@@ -9,10 +9,8 @@ public class InventoryManager : MonoBehaviour
 {
     [HideInInspector] public Item[] Inventory;
     [HideInInspector] public bool hasStorage = true;
-    [HideInInspector] public float delay = 0f;
     [HideInInspector] public Item[] chest;
     [HideInInspector] public Item[] utility;
-    public float attackDelay = 0.5f;
     public GameObject chestObject;
     public GameObject pausePanel;
     public GameObject itemPrefab;
@@ -36,6 +34,10 @@ public class InventoryManager : MonoBehaviour
     public Image[] chestSlots;
     public Image[] chestIcons;
     public TextMeshProUGUI[] chestAmount;
+    public Image utilityIcon0;
+    public Image utilityIcon1;
+    public GameObject utilityIconContainer;
+    GameManager gameManager;
     Image[] hotbar = new Image[5];
     List<int> appendedID = new();
     Transform bonineTransform;
@@ -155,6 +157,7 @@ public class InventoryManager : MonoBehaviour
     void Awake()
     {
         bonineTransform = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Transform>();
+        gameManager = GetComponent<GameManager>();
         Inventory = new Item[inventorySlots.Length];
         detailItem = new Item[1];
         detailItem[0] = new Item();
@@ -167,13 +170,14 @@ public class InventoryManager : MonoBehaviour
 
         utility[0] = new Item();
         utility[1] = new Item();
+        StartCoroutine(CheckForDisplayUtility());
 
         for (int i = 0; i < hotbar.Length; i++) hotbar[i] = inventorySlots[i];
         for (int i = 0; i < chest.Length; i++) chest[i] = new Item();
     }
+
     void Update()
     {
-        if (delay > 0) delay -= Time.deltaTime;
         if (pausePanel.activeSelf) return;
 
         bool l2 = Input.GetKeyDown(KeyCode.JoystickButton4);
@@ -204,20 +208,82 @@ public class InventoryManager : MonoBehaviour
 
         if (selectedHotbar != oldSelectedPosition)
         {
+            if (utility[1].id != 0) utility[1].itemReference.GetComponent<ItemParam>().item.mouseKey = 1;
             selectIcon.localPosition = new Vector2(120 * (selectedHotbar + 1) + 20, 20);
 
-            if (Inventory[oldSelectedPosition].id != 0 && Inventory[oldSelectedPosition].itemReference != null) Inventory[oldSelectedPosition].itemReference.SetActive(false);
-            if (Inventory[selectedHotbar].id != 0 && Inventory[selectedHotbar].itemReference != null)
+            if (Inventory[oldSelectedPosition].id != 0 && Inventory[oldSelectedPosition].itemReference != null && Inventory[selectedHotbar].id != utility[0].id && Inventory[selectedHotbar].id != utility[1].id) Inventory[oldSelectedPosition].itemReference.SetActive(false);
+            if (Inventory[selectedHotbar].id != 0 && Inventory[selectedHotbar].itemReference != null && Inventory[selectedHotbar].id != utility[0].id)
             {
                 Inventory[selectedHotbar].itemReference.SetActive(true);
                 if (utility[0].itemReference != null) utility[0].itemReference.SetActive(false);
             }
 
-            else if (utility[0].itemReference != null) utility[0].itemReference.SetActive(true);
+            else if (utility[0].id != 0) utility[0].itemReference.SetActive(true);
+
+            if (utility[1].id != 0)
+            {
+                utility[1].itemReference.GetComponent<ItemParam>().item.mouseKey = 1;
+                if (utility[1].id != 0) utility[1].itemReference.SetActive(true);
+            }
+
+            if (utility[0].id != 0)
+            {
+                utility[0].itemReference.GetComponent<ItemParam>().item.mouseKey = 0;
+                if (utility[0].id != 0) utility[0].itemReference.SetActive(true);
+            }
+
+            if (Inventory[selectedHotbar].id == utility[1].id && Inventory[selectedHotbar].itemType == Item.ItemTypes.Utility && Inventory[selectedHotbar].itemReference != null)
+            {
+                Inventory[selectedHotbar].itemReference.GetComponent<ItemParam>().item.mouseKey = 0;
+                Inventory[selectedHotbar].itemReference.SetActive(true);
+            }
+
+            if (Inventory[selectedHotbar].itemType != Item.ItemTypes.Utility && utility[1].id != 0)
+            {
+                utility[1].itemReference.GetComponent<ItemParam>().item.mouseKey = 1;
+            }
+
+            if (Inventory[oldSelectedPosition].itemType == Item.ItemTypes.Utility && Inventory[oldSelectedPosition].id != utility[0].id && Inventory[oldSelectedPosition].id != utility[1].id && Inventory[oldSelectedPosition].itemReference != null) Inventory[oldSelectedPosition].itemReference.SetActive(false);
+            CheckForActiveUtility();
         }
     }
 
-    public void AddGlobalDelay() => delay = attackDelay;
+    IEnumerator CheckForDisplayUtility()
+    {
+        while (true)
+        {
+            bool trigger = false;
+
+            if (utility[1].id != 0)
+            {
+                utilityIcon1.color = new Color(1, 1, 1, 1);
+                utilityIcon1.sprite = utility[1].icon;
+                trigger = true;
+            }
+
+            else utilityIcon1.color = new Color(1, 1, 1, 0);
+
+            if (Inventory[selectedHotbar].itemType == Item.ItemTypes.Utility)
+            {
+                utilityIcon0.color = new Color(1, 1, 1, 1);
+                utilityIcon0.sprite = Inventory[selectedHotbar].icon;
+                trigger = true;
+            }
+
+            else if (utility[0].id != 0)
+            {
+                utilityIcon0.color = new Color(1, 1, 1, 1);
+                utilityIcon0.sprite = utility[0].icon;
+                trigger = true;
+            }
+
+            else utilityIcon0.color = new Color(1, 1, 1, 0);
+
+            if (!trigger) utilityIconContainer.SetActive(false);
+            else utilityIconContainer.SetActive(true);
+            yield return new WaitForSeconds(0.05f);
+        }
+    }
 
     public void LoadEmptyInventory()
     {
@@ -257,6 +323,55 @@ public class InventoryManager : MonoBehaviour
 
             else Inventory[i] = new Item();
         }
+
+        StartCoroutine(ExchangeItemOnLoad());
+        CheckForActiveUtility();
+    }
+
+    IEnumerator ExchangeItemOnLoad()
+    {
+        int utility0 = PlayerPrefs.GetInt("Utility_0", 0);
+        int utility1 = PlayerPrefs.GetInt("Utility_1", 0);
+
+        if (utility0 != 0)
+        {
+            Item tempItem = Inventory[0];
+            Remove(0, Inventory, iconSlots, amountTexts);
+            yield return null;
+
+            AddItemOnBonine((ItemCode)utility0, 1);
+            yield return null;
+
+            ExchangeItem(0);
+            yield return null;
+
+            ExchangeItemOnUtility(0);
+            yield return null;
+
+            AddItemOnBonine((ItemCode)tempItem.id, tempItem.amount);
+            yield return null;
+        }
+
+        if (utility1 != 0)
+        {
+            Item tempItem = Inventory[0];
+            Remove(0, Inventory, iconSlots, amountTexts);
+            yield return null;
+
+            AddItemOnBonine((ItemCode)utility1, 1);
+            yield return null;
+
+            ExchangeItem(0);
+            yield return null;
+
+            ExchangeItemOnUtility(1);
+            yield return null;
+
+            AddItemOnBonine((ItemCode)tempItem.id, tempItem.amount);
+            yield return null;
+        }
+
+        if (utility[0].id == utility[1].id && utility0 != 0 && utility1 != 0) utility[0].itemReference.GetComponent<ItemParam>().item.mouseKey = 1;
     }
 
     public void SaveUserInventory()
@@ -269,6 +384,8 @@ public class InventoryManager : MonoBehaviour
             else PlayerPrefs.SetInt("Amount_Inventory_" + i, -1);
         }
 
+        PlayerPrefs.SetInt("Utility_0", utility[0].id);
+        PlayerPrefs.SetInt("Utility_1", utility[1].id);
         PlayerPrefs.Save();
     }
 
@@ -276,6 +393,21 @@ public class InventoryManager : MonoBehaviour
     public void AddItem(ItemCode itemID, int amount, Vector2 position) => AddItemExtended((int)itemID, amount, 0, Vector2.zero, position);
     public void AddItemExtended(int itemID, int amount, float timer, Vector2 initialForce, Vector2 position)
     {
+        if (!gameManager.IsPointNavigable(position))
+        {
+            Vector2 topPosition = new(position.x, position.y + 0.5f);
+
+            if (gameManager.IsPointNavigable(topPosition))
+            {
+                position = topPosition;
+            }
+
+            else
+            {
+                position = new Vector2(position.x, position.y - 0.5f);
+            }
+        }
+
         GameObject createdItem = Instantiate(itemPrefab, position, Quaternion.Euler(0, 0, 0));
         ItemObject itemObject = createdItem.GetComponent<ItemObject>();
         SpriteRenderer itemImage = createdItem.GetComponent<SpriteRenderer>();
@@ -384,10 +516,10 @@ public class InventoryManager : MonoBehaviour
                 CreateItemInstance(currentIndex);
 
                 accessedUtilitySlot = -1;
-                CheckForActiveUtility();
 
-                if (Inventory[currentIndex].id != 0) Inventory[currentIndex].itemReference.GetComponent<ItemParam>().item.mouseKey = 0;
+                if (Inventory[currentIndex].id != 0 && Inventory[currentIndex].itemType == Item.ItemTypes.Utility) Inventory[currentIndex].itemReference.GetComponent<ItemParam>().item.mouseKey = 0;
                 if (Inventory[currentIndex].itemReference != null && currentIndex != selectedHotbar) Inventory[currentIndex].itemReference.SetActive(false);
+                CheckForActiveUtility();
 
                 return;
             }
@@ -598,7 +730,6 @@ public class InventoryManager : MonoBehaviour
             previousIndex = -1;
             previousChestIndex = -1;
 
-
             return;
         }
 
@@ -627,6 +758,23 @@ public class InventoryManager : MonoBehaviour
 
     public void ExchangeItemOnUtility(int slotNumber)
     {
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            if (hasStorage && utility[slotNumber].id != 0)
+            {
+                utility[slotNumber].itemReference.GetComponent<ItemParam>().item.mouseKey = 0;
+                utility[slotNumber].itemReference.SetActive(false);
+
+                AddItemOnBonine((ItemCode)utility[slotNumber].id, 1);
+                Remove(slotNumber, utility, utilityIcons, utilityAmount);
+                CheckForActiveUtility();
+
+                if (Inventory[selectedHotbar].itemReference != null) Inventory[selectedHotbar].itemReference.SetActive(true);
+            }
+
+            return;
+        }
+
         if (previousIndex != -1)
         {
             if (Inventory[previousIndex].id != 0 && Inventory[previousIndex].itemType != Item.ItemTypes.Utility) return;
@@ -640,7 +788,6 @@ public class InventoryManager : MonoBehaviour
 
             if (Inventory[previousIndex].id != 0) Inventory[previousIndex].itemReference.GetComponent<ItemParam>().item.mouseKey = 0;
             if (Inventory[previousIndex].itemReference != null && previousIndex != selectedHotbar) Inventory[previousIndex].itemReference.SetActive(false);
-
 
             inventorySlots[previousIndex].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
             accessedUtilitySlot = -1;
@@ -680,6 +827,12 @@ public class InventoryManager : MonoBehaviour
         }
 
         CheckForActiveUtility();
+    }
+
+    public void RemoveDetailItemOnExit()
+    {
+        AddItemOnBonine((ItemCode)detailItem[0].id, detailItem[0].amount);
+        Remove(0, detailItem, detailImage, detailAmount);
     }
 
     public void AdjustItemInDetails()
@@ -832,12 +985,14 @@ public class InventoryManager : MonoBehaviour
         if (Inventory[selectedHotbar].id != 0 && Inventory[selectedHotbar].itemReference != null)
         {
             Inventory[selectedHotbar].itemReference.SetActive(true);
-            if (utility[0].itemReference != null) utility[0].itemReference.SetActive(false);
+            if (utility[0].id != 0 && Inventory[selectedHotbar].id != utility[0].id) utility[0].itemReference.SetActive(false);
+
+            if (utility[1].id == Inventory[selectedHotbar].id) utility[1].itemReference.SetActive(true);
         }
 
         else
         {
-            if (utility[0].itemReference != null)
+            if (utility[0].id != 0)
             {
                 utility[0].itemReference.SetActive(true);
                 utility[0].mouseKey = 0;
@@ -845,7 +1000,7 @@ public class InventoryManager : MonoBehaviour
                 utility[0].itemReference.GetComponent<ItemParam>().item.mouseKey = 0;
             }
 
-            if (utility[1].itemReference != null)
+            if (utility[1].id != 0)
             {
                 utility[1].itemReference.SetActive(true);
                 utility[1].mouseKey = 1;
@@ -853,5 +1008,13 @@ public class InventoryManager : MonoBehaviour
                 utility[1].itemReference.GetComponent<ItemParam>().item.mouseKey = 1;
             }
         }
+
+        if (utility[1].id != 0 && Inventory[selectedHotbar].itemType == Item.ItemTypes.Utility)
+        {
+            utility[1].itemReference.SetActive(true);
+            utility[1].itemReference.GetComponent<ItemParam>().item.mouseKey = 1;
+        }
+
+        if (Inventory[selectedHotbar].id == utility[1].id && utility[1].id != 0) utility[1].itemReference.GetComponent<ItemParam>().item.mouseKey = 0;
     }
 }

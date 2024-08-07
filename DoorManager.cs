@@ -69,7 +69,7 @@ public class DoorManager : MonoBehaviour
         if (doorIsOpened)
         {
             bonine.transform.position = new Vector2(x, bonine.transform.position.y);
-            darkManager.SetActive(false);
+            if (darkManager != null) darkManager.SetActive(false);
         }
     }
 
@@ -78,7 +78,7 @@ public class DoorManager : MonoBehaviour
         if (doorIsOpened)
         {
             bonine.transform.position = new Vector2(bonine.transform.position.x, y);
-            darkManager.SetActive(false);
+            if (darkManager != null) darkManager.SetActive(false);
         }
     }
 }

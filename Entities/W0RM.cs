@@ -20,6 +20,7 @@ public class W0RM : MonoBehaviour
     public float digSpeed = 3f;
     public float digCooldown = 1.5f;
     public AudioSource diggingAudio;
+    GameManager gameManager;
     Animator animator;
     NavMeshAgent agent;
     BonineHealth bonineHealth;
@@ -55,6 +56,7 @@ public class W0RM : MonoBehaviour
     void Start()
     {
         bonineTransform = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Transform>();
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         bonine = GameObject.FindGameObjectWithTag("Bonine");
         movement = bonine.GetComponent<Movement>();
         bonineHealth = bonine.GetComponent<BonineHealth>();
@@ -115,7 +117,7 @@ public class W0RM : MonoBehaviour
 
                 PlayDigOutAnimation(direction);
 
-                Instantiate(knockbackObject, transform.position, Quaternion.identity);
+                Instantiate(knockbackObject, staticPosition, Quaternion.identity);
                 yield return new WaitForSeconds(digCooldown);
                 animator.speed = 1;
                 agent.enabled = true;
@@ -123,8 +125,6 @@ public class W0RM : MonoBehaviour
 
                 StartCoroutine(StopW0RM());
                 ChangeAnimationState(idleAnimation);
-
-
             }
 
             else if (doWalk && isInView && isActive)

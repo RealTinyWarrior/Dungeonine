@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Movement : MonoBehaviour
@@ -32,6 +33,7 @@ public class Movement : MonoBehaviour
 
     void Start()
     {
+        StartCoroutine(BonineIdleStart());
         glowManager = GetComponent<GlowManager>();
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
@@ -51,6 +53,7 @@ public class Movement : MonoBehaviour
 
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
+        movement.Normalize();
 
         if (rotationTimer > 0)
         {
@@ -95,8 +98,12 @@ public class Movement : MonoBehaviour
 
             isPlayingAudio = false;
         }
+    }
 
-        movement.Normalize();
+    IEnumerator BonineIdleStart()
+    {
+        yield return new WaitForSeconds(0.1f);
+        ChangeAnimationState(Animation.Bonine_Idle);
     }
 
     void FixedUpdate()
@@ -109,6 +116,7 @@ public class Movement : MonoBehaviour
 
     public void ChangeAnimationState(Animation newState)
     {
+        if (isDead) return;
         if (newState == currentState) return;
 
         animator.Play(newState.ToString());

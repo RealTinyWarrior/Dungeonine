@@ -8,6 +8,7 @@ public class InventoryPopup : MonoBehaviour
     bool isActive = false;
     RectTransform rectTransform;
     public float popupSpeed = 0.5f;
+    GameObject pausePanel;
 
     void Update()
     {
@@ -17,9 +18,24 @@ public class InventoryPopup : MonoBehaviour
     void Start()
     {
         rectTransform = GetComponent<RectTransform>();
+        pausePanel = GameObject.FindGameObjectWithTag("PauseScreen");
     }
 
     public void Popup()
+    {
+        if (pausePanel == null)
+        {
+            pausePanel = GameObject.FindGameObjectWithTag("PauseScreen");
+            if (pausePanel == null) DoPopup();
+        }
+
+        else if (!pausePanel.activeSelf)
+        {
+            DoPopup();
+        }
+    }
+
+    private void DoPopup()
     {
         if (isActive)
         {

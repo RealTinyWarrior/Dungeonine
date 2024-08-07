@@ -1,7 +1,12 @@
 public enum ItemCode
 {
-    Empty, TheSlasher, Key_F1,
-    Stone
+    Empty,
+    TheSlasher,
+    KeyF1,
+    Stone,
+    Cupcake,
+    SuspiciousCrystal,
+    SteelEnergizers
 }
 
-//* line number represents id (except 0, 1, 2)
+// Hover to look for ID

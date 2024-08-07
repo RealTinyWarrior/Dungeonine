@@ -24,38 +24,49 @@ public class MainMenuManager : MonoBehaviour
     public string[] splashTexts;
     [HideInInspector] public int selectedButton = 3;
     bool hasHeld = false;
+    AudioSource localAudio;
 
     public void NoConfirmationOfGameQuit()
     {
         quitPanel.SetActive(false);
+        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
     }
 
     public void YesConfirmationOfDataReset()
     {
+        float musicVolume = PlayerPrefs.GetFloat("MusicVolume", 1);
+        float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1);
+        int glow = PlayerPrefs.GetInt("glow", 1);
+        int lighting = PlayerPrefs.GetInt("lighting", 1);
+
         PlayerPrefs.DeleteAll();
+
+        PlayerPrefs.SetFloat("MusicVolume", musicVolume);
+        PlayerPrefs.SetFloat("SFXVolume", sfxVolume);
+        PlayerPrefs.SetInt("glow", glow);
+        PlayerPrefs.SetInt("lighting", lighting);
+
+        PlayerPrefs.Save();
+
         resetPanel.SetActive(false);
-        Cursor.SetCursor(defaultCursor, new Vector2(30, 20), CursorMode.Auto);
+        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
 
         playPanel.SetActive(true);
-        GetComponent<AudioSource>().Stop();
+        localAudio.Stop();
         playButton.GetComponent<MainMenuHover>().addPlayEffect = true;
     }
 
     public void NoConfirmationOfDataReset()
     {
         resetPanel.SetActive(false);
-        Cursor.SetCursor(defaultCursor, new Vector2(30, 20), CursorMode.Auto);
-    }
-
-    public void PlayClickSound()
-    {
-        clickSound.GetComponent<AudioSource>().Play();
+        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
     }
 
     void Start()
     {
-        Cursor.SetCursor(defaultCursor, new Vector2(30, 20), CursorMode.Auto);
+        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
         text.text = splashTexts[Random.Range(0, splashTexts.Length - 1)];
+        localAudio = GetComponent<AudioSource>();
 
         text.outlineWidth = 0.3f;
         text.outlineColor = Color.black;

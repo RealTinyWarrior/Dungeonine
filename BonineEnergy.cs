@@ -13,7 +13,7 @@ public class BonineEnergy : MonoBehaviour
     public int energy = 100;
     public float energyRate = 0.05f;
     public float energyCooldown = 2f;
-    bool blockRegen = false;
+    Coroutine runningCoroutine;
     float energyTimer;
 
     void Update()
@@ -21,43 +21,47 @@ public class BonineEnergy : MonoBehaviour
         if (energy < 100)
         {
             if (energyTimer < energyCooldown) energyTimer += Time.deltaTime;
-
-            else
-            {
-                StartCoroutine(RechargeEnergy());
-            }
+            else IncreaseEnergy(100, energyRate);
         }
     }
 
-    IEnumerator RechargeEnergy()
+    public void DecreaseEnergy(int change, float rate = 0.03f) => SetEnergy(energy - change >= 0 ? energy - change : 0, false, rate);
+    public void IncreaseEnergy(int change, float rate = 0.03f) => SetEnergy(energy + change <= 100 ? energy + change : 100, true, rate);
+
+    IEnumerator UseEnergyCoroutine(int energyVal, bool increase, float rate)
     {
-        while (energy < 100)
+        bool condition = increase ? energy < energyVal : energy > energyVal;
+
+        while (condition)
         {
-            if (blockRegen)
+            if (!increase)
             {
-                blockRegen = false;
-                break;
+                energy = energy - 1 <= 0 ? 0 : energy - 1;
+                energyTimer = 0;
             }
 
-            IncreaseEnergy(1);
-            yield return new WaitForSeconds(energyRate);
+            else energy = energy + 1 >= 100 ? 100 : energy + 1;
+
+            energyBar.value = energy;
+            energyText.text = energy.ToString() + "EG";
+            energyIconObject.sprite = energyIcons[Convert.ToInt32(Math.Ceiling((float)energy / 10))];
+            condition = increase ? energy < energyVal : energy > energyVal;
+            yield return new WaitForSeconds(rate);
         }
     }
 
-    public void DecreaseEnergy(int change) => SetEnergy(energy - change >= 0 ? energy - change : 0);
-    public void IncreaseEnergy(int change) => SetEnergy(energy + change <= 100 ? energy + change : 100);
-
-    public void SetEnergy(int energyVal)
+    IEnumerator UseEnergy(int energyVal, bool increase, float rate)
     {
-        if (energyVal < energy)
-        {
-            blockRegen = true;
-            energyTimer = 0;
-        }
+        if (runningCoroutine != null) StopCoroutine(runningCoroutine);
 
-        energy = energyVal;
-        energyBar.value = energyVal;
-        energyText.text = energyVal.ToString() + "EG";
-        energyIconObject.sprite = energyIcons[Convert.ToInt32(Math.Ceiling((float)energyVal / 10))];
+        runningCoroutine = StartCoroutine(UseEnergyCoroutine(energyVal, increase, rate));
+        yield return null;
+    }
+
+
+    void SetEnergy(int energyVal, bool increase, float rate)
+    {
+        if (energyVal == energy) return;
+        StartCoroutine(UseEnergy(energyVal, increase, rate));
     }
 }

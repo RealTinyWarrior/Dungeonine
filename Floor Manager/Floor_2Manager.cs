@@ -11,25 +11,28 @@ public class Floor_2Manager : MonoBehaviour
     public AudioSource music;
     public bool hasPulledLever;
     public GameObject darkManager01;
+    public GameObject startLadder;
+    public AudioSource backgroundMusic;
     MessageManager messageManager;
     EntityManager entityManager;
     Movement movement;
     InventoryManager inventory;
     GameManager pauseManager;
+    bool hasCompletedLevel = false;
 
     void Update()
     {
-        if (messageManager.GetResolved("Move on, more mysteries await!") || messageManager.GetResolved("Anyways.. let's move on!")) movement.allowMovement = true;
-
-        if (messageManager.GetResolved("Quick RUN!! Close the gates by flicking the lever, run!"))
+        if (messageManager.GetResolved("Quick RUN!! Close the gates by flicking the lever, run!") || messageManager.GetResolved("You know the drill, run!"))
         {
             music.Play();
+            backgroundMusic.Stop();
             pauseManager.bossFightOngoing = true;
             darkManager01.SetActive(false);
             StartCoroutine(SlowlySpawnBuckets());
 
             movement.speed = 6;
             movement.allowMovement = true;
+            startLadder.SetActive(false);
         }
     }
 
@@ -43,19 +46,35 @@ public class Floor_2Manager : MonoBehaviour
         movement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
         StartCoroutine(Conversation());
 
+        if (PlayerPrefs.GetInt("LevelsUnlocked", 2) > 2)
+        {
+            hasCompletedLevel = true;
+        }
+
         inventory.LoadUserInventory();
     }
 
     IEnumerator Conversation()
     {
         movement.allowMovement = false;
-        yield return new WaitForSeconds(6.2f);
+        yield return new WaitForSeconds(4.8f);
 
-        messageManager.Edit("Master", new string[] {
-            "Look who's back!",
-            "Congrats for finding your way out of there.",
-            "Move on, more mysteries await!"
-        }, chatIcons);
+        if (!hasCompletedLevel)
+        {
+            messageManager.Edit("Master", new string[] {
+                "Look who's back!",
+                "Congrats for finding your way out of there.",
+                "Move on, more mysteries await!"
+            }, chatIcons);
+        }
+
+        else
+        {
+            messageManager.Edit("Master", new string[] {
+                "So you are back again on this floor.",
+                "Remember, the buckets are still out here, so be careful."
+            }, chatIcons);
+        }
     }
 
     public void LastMomentConvo()
@@ -63,24 +82,34 @@ public class Floor_2Manager : MonoBehaviour
         if (hasPulledLever) return;
 
         hasPulledLever = true;
-        movement.allowMovement = false;
         messageManager.Edit("Master", new string[] {
             "Good job!",
-            "Sorry. It was my bad that you had to face this",
-            "Anyways.. let's move on!"
+            "This floor is dangerous, be careful..",
+            "Anyways.. move on!"
         }, chatIcons);
     }
 
     public void TouchTrigger()
     {
-        movement.allowMovement = false;
-        messageManager.Edit("Master", new string[] {
-            "Uh oh...",
-            "Uhh.. I mistakely let them free.. the buckets..",
-            "You uhh.. have to RUN!",
-            "Listen to the blue arrows and DO NOT listen to the red arrows.",
-            "Quick RUN!! Close the gates by flicking the lever, run!"
-        }, chatIcons);
+        if (!hasCompletedLevel)
+        {
+            messageManager.Edit("Master", new string[] {
+                "Uh oh...",
+                "The buckets, they escaped...",
+                "You uhh.. have to RUN!",
+                "Listen to the blue arrows and DO NOT listen to the red arrows.",
+                "Quick RUN!! Close the gates by flicking the lever, run!"
+            }, chatIcons);
+        }
+
+        else
+        {
+            messageManager.Edit("Master", new string[] {
+                "Uhmm..",
+                "They escaped again.",
+                "You know the drill, run!"
+            }, chatIcons);
+        }
     }
 
     public void SpawnMoreBuckets(int index) => StartCoroutine(SpawnBucket(moreBuckets[index]));
@@ -89,6 +118,7 @@ public class Floor_2Manager : MonoBehaviour
     public void SaveGame()
     {
         PlayerPrefs.SetInt("LevelsUnlocked", 2);
+        PlayerPrefs.Save();
 
         inventory.SaveUserInventory();
         SceneManager.LoadScene("MainMenu");
@@ -99,9 +129,10 @@ public class Floor_2Manager : MonoBehaviour
         for (int i = 1; i <= 60; i++)
         {
             Bucket bucket = entityManager.Spawn(EntityCode.Bucket_No_Glow, i % 2 == 0 ? new Vector2(6.5f, 3.5f) : new Vector2(-5.2f, 3.5f)).GetComponent<Bucket>();
+            bucket.willDespawn = true;
             bucket.viewDistance = 1000;
+            bucket.despawnTimer = 50;
             bucket.speed = 10.5f;
-
 
             Health bucketHealth = bucket.GetComponent<Health>();
             bucket.AddComponent<DestroyObject>().timer = 50;
