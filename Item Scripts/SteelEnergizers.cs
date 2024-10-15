@@ -28,6 +28,7 @@ public class SteelEnergizers : MonoBehaviour
         Vector2 direction = itemController.DirectionalUtility();
         if (!itemController.input) return;
 
+        // Instantiates a bullet at the direction where mouse was clicked
         SteelEnergizersBullet bullet = Instantiate(bulletObject, new Vector2(transform.position.x, transform.position.y), Quaternion.identity).GetComponent<SteelEnergizersBullet>();
         float degree = ItemController.GetDegree(direction);
 

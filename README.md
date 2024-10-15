@@ -10,3 +10,4 @@ The code of the first game made by me, **Dungeonine**! Dungeonine is a action an
 -   The Entities folder contains code for every single entity in the game
 -   The Item Scripts folder contains code of the game items.
 -   The Main Menu folder contains code for main menu.
+-   Cursor Folder has code for cursor manager.

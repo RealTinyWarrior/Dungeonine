@@ -51,6 +51,23 @@ public class Floor_4Manager : MonoBehaviour
         }
     }
 
+    IEnumerator StartConversation()
+    {
+        yield return new WaitForSeconds(4.8f);
+
+        messageManager.Edit("Master", new string[] {
+            "Hey Bonine! Sorry I lost connection. Glad to see you safe!",
+            "<icon>", "1",
+            "Alright, listen up, this floor's gonna be a tough one.",
+            "The buckets and the W0RMs, they went OVERCLOCKED!",
+            "Using multiple utility with one hand might become difficult for you, here take this.",
+            "This is a Tablet, it has many functionalities",
+            "On the bottom right corner, you'll see two utility slots, where you can use utility on your off hand.",
+            "Throughout your journey, you'll get many more applications for this tablet",
+            "Once you enter that door, there's no coming back, good luck!"
+        }, chatIcons);
+    }
+
     public void Showdown()
     {
         bonineMovement.speed = 4;
@@ -128,23 +145,6 @@ public class Floor_4Manager : MonoBehaviour
             "<icon>", "1",
             "Bonine, you did it, congrats!",
             "I hope you utilized your tablet properly!"
-        }, chatIcons);
-    }
-
-    IEnumerator StartConversation()
-    {
-        yield return new WaitForSeconds(4.8f);
-
-        messageManager.Edit("Master", new string[] {
-            "Hey Bonine! Sorry I lost connection. Glad to see you safe!",
-            "<icon>", "1",
-            "Alright, listen up, this floor's gonna be a tough one.",
-            "The buckets and the W0RMs, they went OVERCLOCKED!",
-            "Using multiple utility with one hand might become difficult for you, here take this.",
-            "This is a Tablet, it has many functionalities",
-            "On the bottom right corner, you'll see two utility slots, where you can use utility on your off hand.",
-            "Throughout your journey, you'll get many more applications for this tablet",
-            "Once you enter that door, there's no coming back, good luck!"
         }, chatIcons);
     }
 }

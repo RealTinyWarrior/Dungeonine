@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
+// This code manager the final door in floor 2, it allows mobs to go through the door
 public class Floor_2MobTeleport : MonoBehaviour
 {
     public DoorManager doormanager;

@@ -32,6 +32,7 @@ public class ItemObject : MonoBehaviour
         Physics2D.IgnoreCollision(bonine.GetComponent<BoxCollider2D>(), gameObject.GetComponent<BoxCollider2D>());
     }
 
+    // Picks up item on Contact
     void Update()
     {
         if (timer > 0) timer -= Time.deltaTime;

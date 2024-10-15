@@ -16,6 +16,7 @@ public class HitEffect : MonoBehaviour
 
     public void CreateHitffect() => doEffect = true;
 
+    // Makes the entity flash for a specified amount of time
     void Update()
     {
         if (doEffect)

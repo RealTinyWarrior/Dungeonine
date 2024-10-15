@@ -56,7 +56,7 @@ public class Floor_3Manager : MonoBehaviour
 
     void Update()
     {
-        //* Lilyth's Toy
+        // * Lilyth's Toy Question Manager
 
         bool[] toyAnswer = messageManager.GetAnswer("Toy Question");
 
@@ -88,7 +88,7 @@ public class Floor_3Manager : MonoBehaviour
             SpawnEntities();
         }
 
-        //* Dome's Diamond
+        //* Dome's Diamond Question Manager
 
         bool[] domeAnswer = messageManager.GetAnswer("Dome Question");
 
@@ -135,10 +135,10 @@ public class Floor_3Manager : MonoBehaviour
         }
     }
 
+    // Pushes Bonine back when he tries to escape without having a conversation
     public void SomethingBlocking()
     {
         if (startConversationDone && !saidNo) return;
-
 
         messageManager.Edit("Interact", new string[] {
             "Something is stopping you to go there."
@@ -147,8 +147,13 @@ public class Floor_3Manager : MonoBehaviour
         bonine.transform.position = new Vector2(bonine.transform.position.x, bonine.transform.position.y - 0.2f);
     }
 
+    // * Lilyth's Dialogue
+
     public void LilythConversation01()
     {
+        if (happyLilyth.activeInHierarchy) bonineMovement.LookAt(happyLilyth.transform.position);
+        else if (sadLilyth.activeInHierarchy) bonineMovement.LookAt(sadLilyth.transform.position);
+
         if (saidNo)
         {
             messageManager.Edit("Lilyth", new string[] {
@@ -204,11 +209,6 @@ public class Floor_3Manager : MonoBehaviour
         }, chatIcons);
     }
 
-    public void TriggerHeartBeat()
-    {
-        if (!dollBattleDone) heartBeat.Play();
-    }
-
     public void OnDollPickup()
     {
         dollInteraction.SetActive(false);
@@ -223,32 +223,9 @@ public class Floor_3Manager : MonoBehaviour
         gameManager.bossFightOngoing = true;
     }
 
-    public void DomeConversation1()
+    public void TriggerHeartBeat()
     {
-        if (foundOrb) return;
-
-        if (domeConversationDone)
-        {
-            bonine.transform.position = new Vector2(bonine.transform.position.x + 0.1f, bonine.transform.position.y);
-
-            messageManager.Edit("Dome", new string[] {
-                "Hoy!",
-                "<choice>",
-                "Dome Question",
-                "Have you found the crystal?",
-            }, chatIcons);
-
-            return;
-        }
-
-        messageManager.Edit("Dome", new string[] {
-            "Yo, whaddup lil' man.",
-            "<choice>",
-            "Dome Question",
-            "Have you happened to see a crystal lying around here?",
-        }, chatIcons);
-
-        domeConversationDone = true;
+        if (!dollBattleDone) heartBeat.Play();
     }
 
     IEnumerator SpawnShowdown()
@@ -277,8 +254,6 @@ public class Floor_3Manager : MonoBehaviour
         StartCoroutine(CheckForBattleEnd());
     }
 
-    public void LastJumpscare() => StartCoroutine(LastJumpscareCoroutine());
-
     void SpawnEntities()
     {
         foreach (Vector2 position in spawnPoints)
@@ -289,6 +264,8 @@ public class Floor_3Manager : MonoBehaviour
             );
         }
     }
+
+    public void LastJumpscare() => StartCoroutine(LastJumpscareCoroutine());
 
     IEnumerator LastJumpscareCoroutine()
     {
@@ -303,13 +280,6 @@ public class Floor_3Manager : MonoBehaviour
 
         yield return new WaitForSeconds(0.18f);
         jumpscareAudio.Stop();
-    }
-
-    IEnumerator DomeLaugh()
-    {
-        domeAnimation.Play("Dome_Laugh");
-        yield return new WaitForSeconds(1f);
-        domeAnimation.Play("Dome__Breath");
     }
 
     IEnumerator CheckForBattleEnd()
@@ -354,5 +324,43 @@ public class Floor_3Manager : MonoBehaviour
 
         yield return new WaitForSeconds(0.3f);
         jumpscareAudio.Stop();
+    }
+
+    // * Dome's Dialogue
+
+    public void DomeConversation1()
+    {
+        bonineMovement.LookAt(new Vector2(-56.28f, 21.39f));
+        if (foundOrb) return;
+
+        if (domeConversationDone)
+        {
+            bonine.transform.position = new Vector2(bonine.transform.position.x + 0.1f, bonine.transform.position.y);
+
+            messageManager.Edit("Dome", new string[] {
+                "Hoy!",
+                "<choice>",
+                "Dome Question",
+                "Have you found the crystal?",
+            }, chatIcons);
+
+            return;
+        }
+
+        messageManager.Edit("Dome", new string[] {
+            "Yo, whaddup lil' man.",
+            "<choice>",
+            "Dome Question",
+            "Have you happened to see a crystal lying around here?",
+        }, chatIcons);
+
+        domeConversationDone = true;
+    }
+
+    IEnumerator DomeLaugh()
+    {
+        domeAnimation.Play("Dome_Laugh");
+        yield return new WaitForSeconds(1f);
+        domeAnimation.Play("Dome__Breath");
     }
 }

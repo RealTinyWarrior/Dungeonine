@@ -188,6 +188,7 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1;
     }
 
+    // Checks if the specified point is Navigable by a nav agent or not
     public bool IsPointNavigable(Vector2 point)
     {
         Vector3Int cellPosition = tilemap.WorldToCell(point);

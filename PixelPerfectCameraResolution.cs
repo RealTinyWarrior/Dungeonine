@@ -5,6 +5,7 @@ public class PixelPerfectCameraResolution : MonoBehaviour
 {
     public PixelPerfectCamera pixelPerfectCamera;
 
+    // * Adjusts Pixel Perfect Camera's resolution to be compatable with screen resolution
     void Start()
     {
         int height = Screen.height / 5;

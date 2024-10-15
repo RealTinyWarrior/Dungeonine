@@ -6,6 +6,7 @@ public class Movement : MonoBehaviour
     [HideInInspector] public bool isUsedByKnockback;
     Rigidbody2D rb;
     GlowManager glowManager;
+    RotateOnDegree rotateOnDegree;
     public Vector2 movement;
     Animator animator;
     public float speed = 2;
@@ -37,10 +38,13 @@ public class Movement : MonoBehaviour
         glowManager = GetComponent<GlowManager>();
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
+
+        rotateOnDegree = GameObject.FindGameObjectWithTag("GameManager").GetComponent<RotateOnDegree>();
     }
 
     void Update()
     {
+        // Doesn't allow Bonine to move if He's dead or inactive
         if (!allowMovement || isDead)
         {
             if (isPlayingAudio) walkingAudio.Stop();
@@ -63,6 +67,8 @@ public class Movement : MonoBehaviour
             rotationTimer -= Time.deltaTime;
             return;
         }
+
+        // * Manages Movement Animation
 
         if (movement.x != 0 || movement.y != 0)
         {
@@ -123,5 +129,11 @@ public class Movement : MonoBehaviour
         currentState = newState;
 
         if (glowManager != null) glowManager.ApplyChangeInGlow((int)currentState);
+    }
+
+    public void LookAt(Vector2 position)
+    {
+        float degree = Vector2.SignedAngle(Vector2.right, position - (Vector2)transform.position);
+        rotateOnDegree.Rotate(degree, 0f);
     }
 }

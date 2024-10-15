@@ -74,6 +74,7 @@ public class W0RM : MonoBehaviour
 
     void Update()
     {
+        // Deals damage to bonine after a specific interval 'damageTimer' only if W0RM is hitting Bonine
         if (damageTimer >= 0) damageTimer -= Time.deltaTime;
 
         else if (isHitting)
@@ -89,20 +90,25 @@ public class W0RM : MonoBehaviour
     {
         while (true)
         {
+            // Casts a raycast from W0RM to Bonine
             RaycastHit2D bonineRay = Physics2D.Raycast(transform.position, (new Vector2(bonineTransform.position.x, bonineTransform.position.y - 0.4f) - (Vector2)transform.position).normalized);
 
             float distance = Vector2.Distance(bonineTransform.position, transform.position);
             bool isInView = distance <= viewRange;
             digGizmos = bonineRay.point;
 
+            // Checks if Bonine is in view
             if (bonineRay.distance <= digRange && digTimer >= digDelay && bonineRay.collider.CompareTag("Bonine") && !movement.isDead)
             {
                 StartCoroutine(StartDigAudio());
+
+                // Looks at the direction where Bonine is standing
                 animator.speed = 1.2f / digSpeed;
                 string direction = (transform.InverseTransformPoint(bonineTransform.position).x < 0) ? "Left" : "Right";
                 Vector2 staticPosition = new(bonineTransform.position.x, bonineTransform.position.y);
                 PlayDigAnimation(direction);
 
+                // deactivates W0RM's nav agent and prepares to dig towards Bonine
                 digTimer = 0f;
                 isActive = false;
                 agent.isStopped = true;
@@ -111,22 +117,26 @@ public class W0RM : MonoBehaviour
                 diggingAudio.Stop();
                 spriteRenderer.color = new Color(1, 1, 1, 0);
 
+                // Digs towards Bonine
                 transform.position = staticPosition;
                 spriteRenderer.color = new Color(1, 1, 1, 1);
                 isActive = true;
 
                 PlayDigOutAnimation(direction);
 
+                // Applies knockback on Bonine via KnockbackObject and activates W0RM's nav agent
                 Instantiate(knockbackObject, staticPosition, Quaternion.identity);
                 yield return new WaitForSeconds(digCooldown);
                 animator.speed = 1;
                 agent.enabled = true;
                 agent.isStopped = false;
 
+                // Stops W0RM
                 StartCoroutine(StopW0RM());
                 ChangeAnimationState(idleAnimation);
             }
 
+            // Moves towards Bonine
             else if (doWalk && isInView && isActive)
             {
                 string direction = (transform.InverseTransformPoint(bonineTransform.position).x < 0) ? "Left" : "Right";
@@ -140,10 +150,12 @@ public class W0RM : MonoBehaviour
                 agent.SetDestination(transform.position);
             }
 
+            // Moves to a random direction
             else if (!isInView && doWalk && isActive)
             {
                 int willMove = Random.Range(0, 4);
 
+                // Casts a ray to a random direction and navigates towards it
                 if (willMove == 0)
                 {
                     Vector2 randomDirection = Random.insideUnitCircle.normalized;
@@ -177,6 +189,39 @@ public class W0RM : MonoBehaviour
             doWalk = doWalk != true;
         }
     }
+
+    // * Trigger & Audio manager
+
+    void OnTriggerEnter2D(Collider2D col)
+    {
+        if (col.CompareTag("Bonine") && isActive)
+        {
+            isHitting = true;
+            damageTimer = 0;
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D col)
+    {
+        if (col.CompareTag("Bonine")) isHitting = false;
+    }
+
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.DrawLine(transform.position, digGizmos);
+
+        Gizmos.color = Color.blue;
+        Gizmos.DrawLine(transform.position, moveGizmos);
+    }
+
+    IEnumerator StartDigAudio()
+    {
+        yield return new WaitForSeconds(0.4f);
+        diggingAudio.Play();
+    }
+
+    // * Animations
 
     IEnumerator PlayStartAnimation(string direction)
     {
@@ -249,34 +294,5 @@ public class W0RM : MonoBehaviour
 
         animator.Play(worm + "_" + newState.ToString());
         currentState = newState;
-    }
-
-    void OnTriggerEnter2D(Collider2D col)
-    {
-        if (col.CompareTag("Bonine") && isActive)
-        {
-            isHitting = true;
-            damageTimer = 0;
-        }
-    }
-
-    void OnTriggerExit2D(Collider2D col)
-    {
-        if (col.CompareTag("Bonine")) isHitting = false;
-    }
-
-    void OnDrawGizmos()
-    {
-        Gizmos.color = Color.green;
-        Gizmos.DrawLine(transform.position, digGizmos);
-
-        Gizmos.color = Color.blue;
-        Gizmos.DrawLine(transform.position, moveGizmos);
-    }
-
-    IEnumerator StartDigAudio()
-    {
-        yield return new WaitForSeconds(0.4f);
-        diggingAudio.Play();
     }
 }

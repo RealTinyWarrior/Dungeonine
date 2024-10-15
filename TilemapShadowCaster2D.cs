@@ -6,7 +6,8 @@ using UnityEngine.Rendering.Universal;
 
 #if UNITY_EDITOR
 
-//* This file is not coded by TinyWarrior
+// * This plugin was programmed by Lumos and modified by Rehope Games
+
 [RequireComponent(typeof(CompositeCollider2D))]
 public class TilemapShadowCaster2D : MonoBehaviour
 {

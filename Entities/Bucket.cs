@@ -27,6 +27,7 @@ public class Bucket : MonoBehaviour
     {
         if (despawnTimer > 0f && willDespawn) despawnTimer -= Time.deltaTime;
 
+        // Deal damage to Bonine after a specific interval 'timer' only if Bonine is colliding with Bucket
         if (isColliding)
         {
             if (timer >= damageDelay)
@@ -61,6 +62,7 @@ public class Bucket : MonoBehaviour
     {
         while (true)
         {
+            // Goes towards Bonine
             if (Vector2.Distance(bonine.transform.position, transform.position) <= viewDistance && !movement.isDead)
             {
                 if (agent.enabled) agent.SetDestination(bonine.transform.position);
@@ -70,15 +72,17 @@ public class Bucket : MonoBehaviour
 
             else
             {
+                // Finds a random path and navigates towards it
                 int willMove = Random.Range(0, 2);
 
                 if (willMove == 0)
                 {
+                    // Casts a ray at a random direction
                     Vector2 randomDirection = Random.insideUnitCircle.normalized;
                     RaycastHit2D ray = Physics2D.Raycast(transform.position, randomDirection, 2.5f);
 
                     if (despawnTimer >= 0) agent.SetDestination(ray.point);
-                    yield return new WaitForSeconds(0.5f);
+                    yield return new WaitForSeconds(0.75f);
                     if (despawnTimer >= 0) agent.SetDestination(transform.position);
 
                 }
@@ -86,6 +90,7 @@ public class Bucket : MonoBehaviour
         }
     }
 
+    // Applies knockback and deals damage to Bonine
     void Damage()
     {
         Vector2 knockbackDirection = ((Vector2)(bonine.transform.position - transform.position)).normalized;
@@ -102,6 +107,7 @@ public class Bucket : MonoBehaviour
         bonineKnockback.ApplyKnockback(knockbackDirection, knockbackStrength, knockbackDuration);
     }
 
+    // Manages isCollider's state
     void OnTriggerEnter2D(Collider2D col)
     {
         if (col.CompareTag("Bonine"))

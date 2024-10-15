@@ -46,6 +46,7 @@ public class BonineHealth : MonoBehaviour
 
     public void Heal(int healing, float rate = 0.02f) => StartCoroutine(UseHealth(health + healing >= 100 ? 100 : health + healing, true, rate));
 
+    // Decreases/Increases Bonine's health at a specified `rate`
     IEnumerator UseHealthCoroutine(int healthVal, bool increase, float rate)
     {
         bool condition = increase ? health < healthVal : health > healthVal;
@@ -68,6 +69,7 @@ public class BonineHealth : MonoBehaviour
         }
     }
 
+    // Animations and Functionalities when Bonine dies
     void PlayDeathEffect()
     {
         if (!movement.isDead)

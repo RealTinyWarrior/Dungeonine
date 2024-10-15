@@ -28,8 +28,10 @@ public class MessageManager : MonoBehaviour
 
     void Start() => bonineMovement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
 
+    // Opens the message popup with the specified information
     public void Edit(string name, string[] userTexts, Sprite[] userIcons)
     {
+        bonineMovement.ChangeAnimationState(bonineMovement.idleState);
         bonineMovement.allowMovement = false;
         typingAudio.Play();
         chatNameField.text = name;
@@ -42,6 +44,7 @@ public class MessageManager : MonoBehaviour
         StartCoroutine(TypeText(texts[position]));
     }
 
+    // * Element 1: Has the user answered the question | Element 2: What is the answer (yes=true, no=false)
     public bool[] GetAnswer(string questionParam)
     {
         if (questionParam == question)
@@ -55,11 +58,13 @@ public class MessageManager : MonoBehaviour
         return new bool[] { false, false };
     }
 
+    // Goes to the next line of dialogue
     public void NextButton()
     {
         if (choiceObject.activeSelf) return;
         clickAudio.Play();
 
+        // * The end of Dialogue
         if (texts.Length - 1 <= position)
         {
             resolved = texts[position];
@@ -112,7 +117,12 @@ public class MessageManager : MonoBehaviour
             StartCoroutine(TypeText(texts[position]));
             resolved = texts[position - toBeDecreased];
         }
+
+        // Makes sure Bonine is standing still
+        bonineMovement.ChangeAnimationState(bonineMovement.idleState);
     }
+
+    // * Manages the Typing animation
 
     IEnumerator TypeText(string text)
     {

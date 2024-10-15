@@ -8,6 +8,7 @@ public class Obsticle : MonoBehaviour
 
     void Start() => StartCoroutine(DoObsticle());
 
+    // * Adds friction to the obsticle based on the delay
     IEnumerator DoObsticle()
     {
         while (true)

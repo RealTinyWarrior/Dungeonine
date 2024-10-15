@@ -1,5 +1,8 @@
 using UnityEngine;
 
+// Script controls the basic functionalities of an item, 
+// * Make sure to write `itemController.item = item` in your Item script
+
 public class ItemController : MonoBehaviour
 {
     GameManager gameManager;

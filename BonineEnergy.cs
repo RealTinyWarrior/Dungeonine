@@ -28,6 +28,7 @@ public class BonineEnergy : MonoBehaviour
     public void DecreaseEnergy(int change, float rate = 0.03f) => SetEnergy(energy - change >= 0 ? energy - change : 0, false, rate);
     public void IncreaseEnergy(int change, float rate = 0.03f) => SetEnergy(energy + change <= 100 ? energy + change : 100, true, rate);
 
+    // Decreases/Increases Bonine's energy at a specified rate
     IEnumerator UseEnergyCoroutine(int energyVal, bool increase, float rate)
     {
         bool condition = increase ? energy < energyVal : energy > energyVal;

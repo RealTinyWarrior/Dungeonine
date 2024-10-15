@@ -1,5 +1,7 @@
 using UnityEngine;
 
+// * Code is messy and repetative, but it works.
+
 public class LaserCast : MonoBehaviour
 {
     public string target;
@@ -22,6 +24,7 @@ public class LaserCast : MonoBehaviour
 
     void Update()
     {
+        // Casts a ray at a specific direction
         RaycastHit2D[] ray = Physics2D.RaycastAll(origin, direction, raycastDistance);
         bool hasHitObsticle = false;
         float obsticleLength = 0f;
@@ -29,8 +32,10 @@ public class LaserCast : MonoBehaviour
 
         foreach (RaycastHit2D rayHit in ray)
         {
+            // If the laser has hit the obsticle before hitting Bonine, we simply stop the laser from going through
             if (hasHitObsticle) break;
 
+            // IF the raycast collides with an obsticle or Bonine, script resizes the laser
             if (rayHit.collider.CompareTag(target) || rayHit.collider.CompareTag(obsticle))
             {
                 Vector2 center = (origin + rayHit.point) / 2;

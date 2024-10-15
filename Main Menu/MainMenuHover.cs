@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
+// Manages the buttons in Main Menu
 public class MainMenuHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     bool hovering;

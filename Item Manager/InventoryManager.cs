@@ -5,6 +5,18 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/*
+    ! Do not visit this file, it causes PTSD
+    
+    I am as confused as you are
+    This pile of crap containing more than a thousand lines of code took more than a month to code
+    I am never making an Inventory Manager ever again
+    I'll copy this Inventory Manager on my future projects if needed
+    Neither am I commenting this file T-T
+    How did I even manage to write this code?
+    I am sorry future Tiny :)
+*/
+
 public class InventoryManager : MonoBehaviour
 {
     [HideInInspector] public Item[] Inventory;
@@ -899,7 +911,7 @@ public class InventoryManager : MonoBehaviour
         return -1;
     }
 
-    //!!Practically Internal Functions:
+    //!!Practically Private Functions:
 
     public void AddItemInInventory(int id, int amount)
     {

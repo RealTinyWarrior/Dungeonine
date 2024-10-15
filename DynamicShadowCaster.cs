@@ -13,6 +13,7 @@ public class DynamicShadowCaster : MonoBehaviour
         shadowCaster2D = GetComponent<ShadowCaster2D>();
     }
 
+    // Casts a ray under Bonine to check if there's a wall in the way, if there is a wall, script temporarely removes Bonine's shadow to fix visual bugs
     void Update()
     {
         RaycastHit2D[] ray = Physics2D.RaycastAll(new Vector2(transform.position.x, transform.position.y - offsetY), new Vector2(0, -1), range);
@@ -29,7 +30,6 @@ public class DynamicShadowCaster : MonoBehaviour
         }
 
     }
-
     void OnDrawGizmos()
     {
         Gizmos.color = Color.red;

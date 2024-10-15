@@ -43,6 +43,7 @@ public class DoorManager : MonoBehaviour
         else doorIsOpened = false;
     }
 
+    // Checks if Bonine has a Key in his inventory, if he does, script opens the door
     public void CheckForKey(int itemID)
     {
         int itemIndex = inventory.ItemIndexOnInventory(itemID);

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
 
+// Controls Music and SFX volumes
 public class MasterVolumeControl : MonoBehaviour
 {
     public AudioMixer audioMixer;

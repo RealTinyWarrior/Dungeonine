@@ -19,12 +19,14 @@ public class OnInteraction : MonoBehaviour
     public GameObject chestObject;
     public GameObject chatObject;
     public InteractionTypes interactionType;
+    Movement bonineMovement;
     GameObject pausePanel;
 
     void Start()
     {
         accessManager = transform.GetChild(0).GetComponent<OnObjectAccess>();
         pausePanel = GameObject.FindGameObjectWithTag("PauseScreen");
+        bonineMovement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
     }
 
     public void OnMouseDown() => StartCoroutine(OnClickManager());
@@ -59,7 +61,7 @@ public class OnInteraction : MonoBehaviour
         onHoverExit?.Invoke(gameObject);
     }
 
-
+    // Runs the specified interaction function when all of the conditions are met
     IEnumerator OnClickManager()
     {
         if (accessManager.canAccess)
@@ -70,11 +72,16 @@ public class OnInteraction : MonoBehaviour
 
             if (doChange)
             {
+                bonineMovement.LookAt(transform.position);
+
                 if (interactionType == InteractionTypes.Chest) chestObject.SetActive(true);
                 yield return null;
 
                 onClick?.Invoke(gameObject);
             }
+
+            yield return new WaitForSeconds(0.2f);
+            bonineMovement.ChangeAnimationState(bonineMovement.idleState);
         }
     }
 }

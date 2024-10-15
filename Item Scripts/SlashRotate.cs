@@ -23,6 +23,7 @@ public class SlashRotate : MonoBehaviour
         itemController.item = item;
     }
 
+    // Rotates the slash sprite, visual happens through mask renderer
     void Update()
     {
         if (activeTimer < activeFor)

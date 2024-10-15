@@ -2,6 +2,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+// This is the only code of Dungeonine that looks dope lmao
+
 [SerializeField]
 public class ChestManager : MonoBehaviour
 {
@@ -39,6 +41,7 @@ public class ChestManager : MonoBehaviour
         }
     }
 
+    // Loads the corresponding chest from `chest[]` into the UI
     public void OpenChestID(int id)
     {
         ChangeChestName(chest[id].name);
@@ -83,6 +86,7 @@ public class ChestManager : MonoBehaviour
         chestObject.SetActive(true);
     }
 
+    // Exits the opened chest
     public void ExitChestID()
     {
         if (inventory.accessedUtilitySlot != -1) inventory.chestSlots[inventory.accessedUtilitySlot].color = new Color(1, 1, 1, 0.1765f);
@@ -112,6 +116,7 @@ public class ChestManager : MonoBehaviour
         gameManager.canPause = true;
     }
 
+    // Stores the items of the chest in PlayerPrefs
     public void SaveChestData()
     {
         for (int i = 0; i < chest.Length; i++)
@@ -129,6 +134,7 @@ public class ChestManager : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    // Loads chesf from PlayerPrefs into `chest[]`
     public void LoadChestData()
     {
         for (int i = 0; i < chest.Length; i++)

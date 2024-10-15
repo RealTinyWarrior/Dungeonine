@@ -17,6 +17,7 @@ public class WormDigDamage : MonoBehaviour
         bonineKnockback = bonine.GetComponent<Knockback>();
     }
 
+    // Instantiated when W0RM hits Bonine, knocks back Bonine and deals damage on contact
     void OnTriggerEnter2D(Collider2D col)
     {
         if (col.CompareTag("Bonine"))
