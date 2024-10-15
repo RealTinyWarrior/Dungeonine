@@ -54,7 +54,7 @@ public class GameTablet : MonoBehaviour
         isOpened = true;
     }
 
-    public void OpenApplicatin(string application)
+    public void OpenApplication(string application)
     {
         if (application != "home") wallpaper.color = new Color(1, 1, 1);
         else wallpaper.color = new Color(0.51f, 0.51f, 0.51f);
