@@ -403,7 +403,7 @@ public class InventoryManager : MonoBehaviour
 
     public void AddItemOnBonine(ItemCode itemID, int amount) => AddItemExtended((int)itemID, amount, 0, Vector2.zero, bonineTransform.position);
     public void AddItem(ItemCode itemID, int amount, Vector2 position) => AddItemExtended((int)itemID, amount, 0, Vector2.zero, position);
-    public void AddItemExtended(int itemID, int amount, float timer, Vector2 initialForce, Vector2 position)
+    public void AddItemExtended(int itemID, int amount, float timer, Vector2 initialForce, Vector2 position, bool dropSound = false)
     {
         if (!gameManager.IsPointNavigable(position))
         {
@@ -430,6 +430,7 @@ public class InventoryManager : MonoBehaviour
         itemObject.timer = timer;
         itemObject.id = itemID;
 
+        if (dropSound) createdItem.GetComponent<AudioSource>().Play();
         if (initialForce.x != 0 && initialForce.y != 0) createdItem.GetComponent<Knockback>().ApplyKnockback(initialForce, 1.4f, 0.6f, true);
     }
 
@@ -734,7 +735,7 @@ public class InventoryManager : MonoBehaviour
                 Mathf.Sin(chestDegree * 0.017453f)
             );
 
-            AddItemExtended(chestItem.id, chestItem.amount, 1.5f, chestVelocity * 5.5f, bonineTransform.position);
+            AddItemExtended(chestItem.id, chestItem.amount, 1.5f, chestVelocity * 5.5f, bonineTransform.position, true);
 
             //? Resetting to default
             chestSlots[previousChestIndex].color = new Color(1, 1, 1, 0.1765f);
@@ -760,7 +761,7 @@ public class InventoryManager : MonoBehaviour
             Mathf.Sin(degree * 0.017453f)
         );
 
-        AddItemExtended(previousItem.id, previousItem.amount, 1.5f, initialVelocity * 5.5f, bonineTransform.position);
+        AddItemExtended(previousItem.id, previousItem.amount, 1.5f, initialVelocity * 5.5f, bonineTransform.position, true);
 
         //? Resetting to default
         inventorySlots[previousIndex].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);

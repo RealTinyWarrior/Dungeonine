@@ -19,6 +19,7 @@ public class MainMenuManager : MonoBehaviour
     public TextMeshProUGUI[] texts;
     public Toggle toggle;
     public Toggle glowToggle;
+    public Toggle particleToggle;
     public AudioSource clickAudioToggle;
     private bool addTimer = true;
     public string[] splashTexts;
@@ -74,6 +75,7 @@ public class MainMenuManager : MonoBehaviour
 
         toggle.isOn = PlayerPrefs.GetInt("lighting", 1) == 1;
         glowToggle.isOn = PlayerPrefs.GetInt("glow", 1) == 1;
+        particleToggle.isOn = PlayerPrefs.GetInt("particle", 1) == 1;
     }
 
     void Update()
@@ -140,6 +142,15 @@ public class MainMenuManager : MonoBehaviour
 
         if (glowToggle.isOn) PlayerPrefs.SetInt("glow", 1);
         else PlayerPrefs.SetInt("glow", 0);
+        PlayerPrefs.Save();
+    }
+
+    public void OnChangeParticle2D()
+    {
+        if (settingsPanel.activeSelf) clickAudioToggle.Play();
+
+        if (particleToggle.isOn) PlayerPrefs.SetInt("particle", 1);
+        else PlayerPrefs.SetInt("particle", 0);
         PlayerPrefs.Save();
     }
 

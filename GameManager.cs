@@ -60,7 +60,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         musicVolume = Mathf.Log10(PlayerPrefs.GetFloat("MusicVolume")) * 20;
-        sfxVolume = Mathf.Log10(PlayerPrefs.GetFloat("MusicVolume")) * 20;
+        sfxVolume = Mathf.Log10(PlayerPrefs.GetFloat("SFXVolume")) * 20;
 
         audioMixer.SetFloat("MusicVolume", musicVolume);
         audioMixer.SetFloat("SFXVolume", sfxVolume);

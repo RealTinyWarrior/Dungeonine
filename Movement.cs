@@ -4,12 +4,13 @@ using UnityEngine;
 public class Movement : MonoBehaviour
 {
     [HideInInspector] public bool isUsedByKnockback;
+    [HideInInspector] public Vector2 movement;
     Rigidbody2D rb;
     GlowManager glowManager;
     RotateOnDegree rotateOnDegree;
-    public Vector2 movement;
     Animator animator;
     public float speed = 2;
+    public float animationSpeed = 1;
     public bool allowMovement = true;
     public bool isDead = false;
     public AudioSource walkingAudio;
@@ -40,6 +41,7 @@ public class Movement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
 
         rotateOnDegree = GameObject.FindGameObjectWithTag("GameManager").GetComponent<RotateOnDegree>();
+        animator.speed = animationSpeed;
     }
 
     void Update()
@@ -134,6 +136,14 @@ public class Movement : MonoBehaviour
     public void LookAt(Vector2 position)
     {
         float degree = Vector2.SignedAngle(Vector2.right, position - (Vector2)transform.position);
-        rotateOnDegree.Rotate(degree, 0f);
+        rotateOnDegree.Rotate(degree, 0.25f);
+
+        StartCoroutine(MakeBonineIdle());
+    }
+
+    IEnumerator MakeBonineIdle()
+    {
+        yield return new WaitForSeconds(0.2f);
+        ChangeAnimationState(idleState);
     }
 }

@@ -61,12 +61,13 @@ public class OnInteraction : MonoBehaviour
         onHoverExit?.Invoke(gameObject);
     }
 
-    // Runs the specified interaction function when all of the conditions are met
     IEnumerator OnClickManager()
     {
         if (accessManager.canAccess)
         {
             bool doChange = true;
+
+            // Does not allow to access the item if these UI components are active
             if (interactionType == InteractionTypes.Chest) if (chestObject.activeSelf) doChange = false;
             if (interactionType == InteractionTypes.Message) if (chatObject.activeSelf) doChange = false;
 
@@ -79,9 +80,6 @@ public class OnInteraction : MonoBehaviour
 
                 onClick?.Invoke(gameObject);
             }
-
-            yield return new WaitForSeconds(0.2f);
-            bonineMovement.ChangeAnimationState(bonineMovement.idleState);
         }
     }
 }

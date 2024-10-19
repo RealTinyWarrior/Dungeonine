@@ -64,13 +64,13 @@ public class Floor_3Manager : MonoBehaviour
         {
             startConversationDone = true;
 
+            // Lilyth's dialogue when you accept her request
             if (toyAnswer[1])
             {
                 saidNo = false;
 
                 messageManager.Edit("Lilyth", new string[] {
-                    "Thank you for your kind words!",
-                    "He must be somewhere in this.. maze.",
+                    "Thank you for your kind words! He must be somewhere in this.. maze.",
                     "I hope that he is alright.."
                 }, chatIcons);
 
@@ -98,24 +98,25 @@ public class Floor_3Manager : MonoBehaviour
             {
                 int inventoryIndex = inventory.ItemIndexOnInventory((int)ItemCode.SuspiciousCrystal);
 
+                // Dome's dialogue when you lie about having the crystal
                 if (inventoryIndex == -1)
                 {
                     messageManager.Edit("Dome", new string[] {
                         "Your lies ain't workin' on me bud.",
-                        "go Find it, then I'm allowing you to go in."
+                        "Go find it, then I'm allowing you to go in."
                     }, chatIcons);
 
                     bonine.transform.position = new Vector2(bonine.transform.position.x + 0.1f, bonine.transform.position.y);
                 }
 
+                // Dome's dialogue when you give him the crystal
                 else
                 {
                     StartCoroutine(DomeLaugh());
 
                     foundOrb = true;
                     messageManager.Edit("Dome", new string[] {
-                        "Thanks a lot mate!",
-                        "For this, Imma reward you with these Steel Energizers.",
+                        "Thanks a lot mate! Here, keep these Steel Energizers.",
                         "Good luck on your adventure my guy."
                     }, chatIcons);
 
@@ -124,12 +125,13 @@ public class Floor_3Manager : MonoBehaviour
                 }
             }
 
+            // When you try to bypass Dome without giving him the crystal
             else
             {
                 bonine.transform.position = new Vector2(bonine.transform.position.x + 0.1f, bonine.transform.position.y);
 
                 messageManager.Edit("Dome", new string[] {
-                   "Go ahead and find it lil' man."
+                   "Go ahead and find it."
                 }, chatIcons);
             }
         }
@@ -141,7 +143,7 @@ public class Floor_3Manager : MonoBehaviour
         if (startConversationDone && !saidNo) return;
 
         messageManager.Edit("Interact", new string[] {
-            "Something is stopping you to go there."
+            "Something is stopping you from going there."
         }, new Sprite[] { emptySprite });
 
         bonine.transform.position = new Vector2(bonine.transform.position.x, bonine.transform.position.y - 0.2f);
@@ -156,6 +158,7 @@ public class Floor_3Manager : MonoBehaviour
 
         if (saidNo)
         {
+            // Lilyth's dialogue after the first time you reject her request
             messageManager.Edit("Lilyth", new string[] {
                 "Cupcake, are you alright?",
                 "<choice>",
@@ -172,6 +175,7 @@ public class Floor_3Manager : MonoBehaviour
 
             if (itemIndex != -1)
             {
+                // Lilyth's dialogue when you find cupcake
                 messageManager.Edit("Lilyth", new string[] {
                     "Cupcake!! You are back!",
                     "Appreciate your help, my friend.. While you were away, I found this in the dungeon.",
@@ -198,6 +202,7 @@ public class Floor_3Manager : MonoBehaviour
         }
 
 
+        // Lilyth's first conversation with Bonine
         messageManager.Edit("Lilyth", new string[] {
             "*Weeps*",
             "Where are you cupcake?",
@@ -337,6 +342,7 @@ public class Floor_3Manager : MonoBehaviour
         {
             bonine.transform.position = new Vector2(bonine.transform.position.x + 0.1f, bonine.transform.position.y);
 
+            // Dome when you talk with him after 'the crystal search'
             messageManager.Edit("Dome", new string[] {
                 "Hoy!",
                 "<choice>",
@@ -347,8 +353,9 @@ public class Floor_3Manager : MonoBehaviour
             return;
         }
 
+        // Dome's first conversation
         messageManager.Edit("Dome", new string[] {
-            "Yo, whaddup lil' man.",
+            "Yo, whaddup lil' guy.",
             "<choice>",
             "Dome Question",
             "Have you happened to see a crystal lying around here?",

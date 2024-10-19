@@ -27,6 +27,7 @@ public class Floor_1Manager : MonoBehaviour
         message = GetComponent<MessageManager>();
         bonineMovement.allowMovement = false;
 
+
         if (PlayerPrefs.GetInt("LevelsUnlocked", 1) > 1)
         {
             bonine.transform.position = new Vector2(15.6f, 10.2f);
@@ -61,7 +62,7 @@ public class Floor_1Manager : MonoBehaviour
                 "This dungeon is filled with mysteries and.. robots.",
 
                 "<icon>", "0",
-                "Look at the wardrobe in the corner, you might find something useful there.",
+                "Look at the wardrobe in the corner, you may find something useful there.",
             }, chatIcons);
 
             gameStartTimer = -1;
