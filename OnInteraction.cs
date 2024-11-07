@@ -14,11 +14,14 @@ public class OnInteraction : MonoBehaviour
     public UnityEvent<GameObject> onHoverEnter;
     public UnityEvent<GameObject> onHoverExit;
     public UnityEvent<GameObject> onClick;
+    public AudioSource clickAudio;
+    public bool accessOnce = false;
     public OnObjectAccess accessManager;
     public string interactionText;
     public GameObject chestObject;
     public GameObject chatObject;
     public InteractionTypes interactionType;
+    public bool leverPulled = false;
     Movement bonineMovement;
     GameObject pausePanel;
 
@@ -63,7 +66,7 @@ public class OnInteraction : MonoBehaviour
 
     IEnumerator OnClickManager()
     {
-        if (accessManager.canAccess)
+        if (accessManager.canAccess && !leverPulled)
         {
             bool doChange = true;
 
@@ -78,7 +81,10 @@ public class OnInteraction : MonoBehaviour
                 if (interactionType == InteractionTypes.Chest) chestObject.SetActive(true);
                 yield return null;
 
+                if (clickAudio != null) clickAudio.Play();
                 onClick?.Invoke(gameObject);
+
+                if (accessOnce) leverPulled = true;
             }
         }
     }

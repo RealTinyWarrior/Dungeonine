@@ -49,6 +49,7 @@ public class InventoryManager : MonoBehaviour
     public Image utilityIcon0;
     public Image utilityIcon1;
     public GameObject utilityIconContainer;
+    ItemStatus itemStatus;
     GameManager gameManager;
     Image[] hotbar = new Image[5];
     List<int> appendedID = new();
@@ -169,6 +170,7 @@ public class InventoryManager : MonoBehaviour
     void Awake()
     {
         bonineTransform = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Transform>();
+        itemStatus = GameObject.FindGameObjectWithTag("ItemStatus").GetComponent<ItemStatus>();
         gameManager = GetComponent<GameManager>();
         Inventory = new Item[inventorySlots.Length];
         detailItem = new Item[1];
@@ -308,9 +310,6 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
-    public void DetailsPopupEnter(int index) { }
-    public void DetailsPopupExit(int index) { }
-
     public void LoadUserInventory()
     {
         for (int i = 0; i < Inventory.Length; i++)
@@ -324,7 +323,7 @@ public class InventoryManager : MonoBehaviour
                 Inventory[i] = item;
 
                 int itemAmount = PlayerPrefs.GetInt("Amount_Inventory_" + i, -1);
-                CreateItemInstance(i);
+                CreateItemInstance(i, true);
 
                 if (itemAmount != -1)
                 {
@@ -609,7 +608,7 @@ public class InventoryManager : MonoBehaviour
                 currentItem, currentIndex, Inventory, iconSlots, amountTexts
             );
 
-            CreateItemInstance(currentIndex);
+            CreateItemInstance(currentIndex, true);
 
             //* Resetting to default
             inventorySlots[previousIndex].color = new Color(0.3608f, 0.6824f, 1f, 0.7f);
@@ -928,6 +927,8 @@ public class InventoryManager : MonoBehaviour
                 Inventory[j].amount += amount;
                 amountTexts[j].text = Inventory[j].amount.ToString();
 
+                itemStatus.ShowItemPopup(Inventory[j].name, amount);
+
                 if (Inventory[j].amount < 0) Remove(j, Inventory, iconSlots, amountTexts);
                 break;
             }
@@ -960,8 +961,13 @@ public class InventoryManager : MonoBehaviour
         SetStorage();
     }
 
-    void CreateItemInstance(int index)
+    void CreateItemInstance(int index, bool onLoad = false)
     {
+        if (Inventory[index].id != 0 && !onLoad)
+        {
+            itemStatus.ShowItemPopup(Inventory[index].name, Inventory[index].amount);
+        }
+
         if ((!appendedID.Contains(Inventory[index].id)) && Inventory[index].itemObject != null)
         {
             Item item = gameItems.items[Inventory[index].id];

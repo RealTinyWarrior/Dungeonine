@@ -4,6 +4,8 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Audio;
 using System.Collections;
+using URPGlitch.Runtime.AnalogGlitch;
+using UnityEngine.Rendering;
 
 public class BonineHealth : MonoBehaviour
 {
@@ -19,13 +21,24 @@ public class BonineHealth : MonoBehaviour
     public AudioSource deathAudio;
     public AudioSource deathMusic;
     public AudioSource hitAudio;
+    public Volume postProcessingVolume;
+    public bool allowGlitchOnImpact;
+
+    [Range(0, 1)]
+    public float colorDriftValue = 0.1f;
+    [Range(0, 1)]
+    public float verticalShakeValue = 0.12f;
     public Sprite[] healthIcons;
     public AudioSource[] stopAudio;
+    AnalogGlitchVolume glitch;
     Coroutine runningCoroutine;
     GlowManager glowManager;
     Animator animator;
     Movement movement;
     HitEffect hitEffect;
+
+    float cachedVJ;
+    float cachedDrift;
 
     void Start()
     {
@@ -34,6 +47,22 @@ public class BonineHealth : MonoBehaviour
         animator = GetComponent<Animator>();
         hitEffect = GetComponent<HitEffect>();
         glowManager = GetComponent<GlowManager>();
+
+        if (allowGlitchOnImpact)
+        {
+            if (postProcessingVolume.profile.TryGet<AnalogGlitchVolume>(out var volume))
+            {
+                glitch = volume;
+                StartCoroutine(GetCachedGlitch());
+            }
+        }
+    }
+
+    IEnumerator GetCachedGlitch()
+    {
+        yield return new WaitForSeconds(0.2f);
+        cachedVJ = glitch.verticalJump.value;
+        cachedDrift = glitch.colorDrift.value;
     }
 
     public void Damage(int damage, float rate = 0.02f)
@@ -41,6 +70,7 @@ public class BonineHealth : MonoBehaviour
         hitEffect.CreateHitffect();
         hitAudio.Play();
 
+        if (allowGlitchOnImpact) StartCoroutine(DoGlitch());
         StartCoroutine(UseHealthCoroutine(health - damage <= 0 ? 0 : health - damage, false, rate));
     }
 
@@ -91,6 +121,15 @@ public class BonineHealth : MonoBehaviour
         health = 0;
         movement.isDead = true;
         movement.allowMovement = false;
+    }
+
+    IEnumerator DoGlitch()
+    {
+        glitch.verticalJump.value = verticalShakeValue;
+        glitch.colorDrift.value = colorDriftValue;
+        yield return new WaitForSeconds(0.1f);
+        glitch.verticalJump.value = cachedVJ;
+        glitch.colorDrift.value = cachedDrift;
     }
 
     IEnumerator UseHealth(int healthVal, bool increase, float rate)

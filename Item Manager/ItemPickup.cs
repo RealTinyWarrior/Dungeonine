@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class ItemPickup : MonoBehaviour
 {
-    public AudioSource pickupAudio;
     public ItemObject itemObject;
     InventoryManager inventory;
     bool hasCollided = false;
@@ -10,7 +9,6 @@ public class ItemPickup : MonoBehaviour
     void Start()
     {
         inventory = GameObject.FindGameObjectWithTag("GameManager").GetComponent<InventoryManager>();
-        pickupAudio = GameObject.FindGameObjectWithTag("PickupAudio").GetComponent<AudioSource>();
     }
 
     void Update()
@@ -22,7 +20,6 @@ public class ItemPickup : MonoBehaviour
             if (item.timer > 0) return;
 
             inventory.AddItemInInventory(item.id, item.amount);
-            pickupAudio.Play();
             Destroy(parent);
         }
     }

@@ -26,7 +26,7 @@ public class Health : MonoBehaviour
             health = 0;
             GameObject.FindGameObjectWithTag("DeathAudio").GetComponent<AudioSource>().Play();
 
-            effectManager.Create(deathEffect, 0.5f, (Vector2)transform.position + hitEffect.effectOffset, 1.2f);
+            effectManager.Create(deathEffect, 0.5f, (Vector2)transform.position + hitEffect.effectOffset, Color.white, 1.2f);
             Destroy(gameObject);
         }
 

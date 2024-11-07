@@ -76,7 +76,7 @@ public class MainMenuHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (button == Buttons.exitFloors || button == Buttons.exitSettings) transform.localScale = new Vector3(1.1f, 1.1f, 1);
-        Cursor.SetCursor(pointerCursor, Vector2.zero, CursorMode.Auto);
+        Cursor.SetCursor(pointerCursor, new Vector2(5, 0), CursorMode.Auto);
         if (text != null) text.color = Color.cyan;
         if (hoverAudio.gameObject.activeSelf) hoverAudio.Play();
         hovering = true;
@@ -95,14 +95,14 @@ public class MainMenuHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (button == Buttons.exitFloors || button == Buttons.exitSettings) transform.localScale = new Vector3(1, 1, 1);
 
         hovering = false;
-        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
+        Cursor.SetCursor(defaultCursor, new Vector2(5, 0), CursorMode.Auto);
     }
 
     public void ButtonControl()
     {
         if (clickSound != null) clickSound.GetComponent<AudioSource>().Play();
 
-        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
+        Cursor.SetCursor(defaultCursor, new Vector2(5, 0), CursorMode.Auto);
         hovering = false;
 
         switch (button)

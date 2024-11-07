@@ -15,7 +15,7 @@ public class SwordHitbox : MonoBehaviour
     {
         if (col.CompareTag("Entity"))
         {
-            effectManager.Create(EffectCode.BlastEffect, 0.1f, (Vector2)col.transform.position + col.GetComponent<HitEffect>().effectOffset, 4.5f);
+            effectManager.Create(EffectCode.BlastEffect, 0.1f, (Vector2)col.transform.position + col.GetComponent<HitEffect>().effectOffset, Color.white, 4.5f);
 
             Health health = col.GetComponent<Health>();
             health.Damage(RandomDamage());

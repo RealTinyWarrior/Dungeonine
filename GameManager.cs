@@ -11,7 +11,6 @@ public class GameManager : MonoBehaviour
 {
     public AudioMixer audioMixer;
     public GameObject pausePanel;
-    public Image pauseContainerImage;
     public RectTransform pauseContainer;
     public Sprite emptyItem;
     public GameObject chatObject;
@@ -26,9 +25,12 @@ public class GameManager : MonoBehaviour
     public GameObject sceneTransition;
     public GameObject restartPanel;
     public GameObject quitPanel;
+    public GameObject[] uiPanels;
+    public bool hasTablet = false;
     public GameObject lightObject;
     public Light2D globalLight;
     public Tilemap tilemap;
+    public Sprite interactionIcon;
     [HideInInspector] public bool bossFightOngoing = false;
     [HideInInspector] public bool canPause = true;
     Camera mainCamera;
@@ -106,7 +108,7 @@ public class GameManager : MonoBehaviour
         bonineMovement.allowMovement = false;
 
         string text = interactableObject.GetComponent<OnInteraction>().interactionText;
-        messageManager.Edit("Interact", new string[] { text }, new Sprite[] { emptyItem });
+        messageManager.Edit("interact", new string[] { text }, new Sprite[] { interactionIcon });
     }
 
     public void LevelComplete(int level) => StartCoroutine(EndLevel(level));
@@ -117,9 +119,7 @@ public class GameManager : MonoBehaviour
 
         Time.timeScale = 0;
         pausePanel.SetActive(true);
-        pauseContainerImage.color = new Color(1, 1, 1, 0f);
         pauseContainer.anchoredPosition = new Vector2(0, 400);
-        pauseContainerImage.DOFade(1, 0.22f).SetUpdate(true);
         pauseContainer.DOAnchorPosY(0, 0.26f).SetUpdate(true);
 
         //! Audio Control: Setting SFX and Music to 0
@@ -130,6 +130,27 @@ public class GameManager : MonoBehaviour
 
         audioMixer.SetFloat("MusicVolume", Mathf.Log(0.0001f) * 20);
         audioMixer.SetFloat("SFXVolume", Mathf.Log(0.0001f) * 20);
+        ShowHUD(false);
+
+        StartCoroutine(CloseUI());
+    }
+
+    IEnumerator CloseUI()
+    {
+        yield return new WaitForSecondsRealtime(0.1f);
+
+        if (chestObject.activeInHierarchy || chatObject.activeInHierarchy)
+        {
+            bonineMovement.ForceToIdleState();
+
+            if (chestObject.activeInHierarchy) chest.ExitChestID();
+
+            if (chatObject.activeInHierarchy)
+            {
+                chatObject.SetActive(false);
+                messageManager.StopAllTypingAudios();
+            }
+        }
     }
 
     public void ResumeGame(bool isRestart)
@@ -151,6 +172,7 @@ public class GameManager : MonoBehaviour
         }
 
         Time.timeScale = 1;
+        ShowHUD(true);
     }
 
     IEnumerator EndLevel(int level)
@@ -170,6 +192,20 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene("Floor_" + level);
     }
 
+    public void ShowHUD(bool hideState)
+    {
+        foreach (GameObject ui in uiPanels)
+        {
+            if (ui.name == "Tablet" || ui.name == "TabletButton")
+            {
+                if (hasTablet) ui.SetActive(hideState);
+            }
+
+            else ui.SetActive(hideState);
+        }
+    }
+
+    // Note: Utility usage relies on the existance of `slogan`
     public bool UseUtility()
     {
         if (bonineMovement.isDead) return false;
@@ -188,7 +224,7 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1;
     }
 
-    // Checks if the specified point is Navigable by a nav agent or not
+    // Checks if the specified point is Navigable by a nav agent or not by checking if that point has a collider tilemap or not
     public bool IsPointNavigable(Vector2 point)
     {
         Vector3Int cellPosition = tilemap.WorldToCell(point);
@@ -196,5 +232,13 @@ public class GameManager : MonoBehaviour
 
         if (tile != null) return false;
         return true;
+    }
+
+    public static Vector2 DegreeToVector2(float degrees)
+    {
+        float radians = degrees * Mathf.Deg2Rad;
+        float x = Mathf.Cos(radians);
+        float y = Mathf.Sin(radians);
+        return new Vector2(x, y);
     }
 }

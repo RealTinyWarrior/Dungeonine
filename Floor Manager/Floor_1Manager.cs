@@ -34,6 +34,8 @@ public class Floor_1Manager : MonoBehaviour
             movableObject.position = new Vector2(9.6f, -4.55f);
             bonineMovement.allowMovement = true;
             leverInteraction.onClick.Invoke(leverObject);
+            leverInteraction.leverPulled = true;
+
             darkManager.SetActive(false);
             hasCompleted = true;
 
@@ -53,16 +55,16 @@ public class Floor_1Manager : MonoBehaviour
         else if (gameStartTimer != -1)
         {
             message.Edit("???", new string[] {
-                "Hello there, you look lost.",
+                "Hey there little one, you look lost.",
 
                 "<icon>", "1",
-                "Oh me? You can call me Master. I'm here to assist you.",
+                "Who am I you may ask? You can call me Master. I'm here to assist you.",
 
                 "<name>", "Master",
-                "This dungeon is filled with mysteries and.. robots.",
+                "This dungeon is filled with robots and... life.",
 
                 "<icon>", "0",
-                "Look at the wardrobe in the corner, you may find something useful there.",
+                "Nevertheless, look at the wardrobe in the corner, you may find something useful there.",
             }, chatIcons);
 
             gameStartTimer = -1;

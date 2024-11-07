@@ -122,6 +122,16 @@ public class Movement : MonoBehaviour
         else rb.velocity = speed * movement;
     }
 
+    public void ForceToIdleState()
+    {
+        if (isDead) return;
+
+        animator.Play(idleState.ToString());
+        if (glowManager != null) glowManager.ApplyChangeInGlow((int)currentState);
+
+        currentState = idleState;
+    }
+
     public void ChangeAnimationState(Animation newState)
     {
         if (isDead) return;
@@ -136,6 +146,12 @@ public class Movement : MonoBehaviour
     public void LookAt(Vector2 position)
     {
         float degree = Vector2.SignedAngle(Vector2.right, position - (Vector2)transform.position);
+
+        if (degree < 0)
+        {
+            degree = 360 + degree;
+        }
+
         rotateOnDegree.Rotate(degree, 0.25f);
 
         StartCoroutine(MakeBonineIdle());
@@ -143,7 +159,7 @@ public class Movement : MonoBehaviour
 
     IEnumerator MakeBonineIdle()
     {
-        yield return new WaitForSeconds(0.2f);
-        ChangeAnimationState(idleState);
+        yield return new WaitForSeconds(0.75f);
+        ForceToIdleState();
     }
 }

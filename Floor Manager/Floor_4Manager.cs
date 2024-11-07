@@ -22,6 +22,7 @@ public class Floor_4Manager : MonoBehaviour
     Movement bonineMovement;
     bool overclockedEntity;
     bool startingDone = false;
+    ItemStatus itemStatus;
     List<GameObject> spawnedEntities = new();
 
     void Start()
@@ -29,43 +30,42 @@ public class Floor_4Manager : MonoBehaviour
         GameObject gameManagerObject = GameObject.FindGameObjectWithTag("GameManager");
         GameObject bonine = GameObject.FindGameObjectWithTag("Bonine");
         bonineMovement = bonine.GetComponent<Movement>();
-        bonineMovement.allowMovement = false;
         gameManager = gameManagerObject.GetComponent<GameManager>();
         inventoryManager = gameManagerObject.GetComponent<InventoryManager>();
-        inventoryManager.LoadUserInventory();
 
         entityManager = GameObject.FindGameObjectWithTag("EntityManager").GetComponent<EntityManager>();
         messageManager = gameManagerObject.GetComponent<MessageManager>();
-        StartCoroutine(StartConversation());
+        inventoryManager.LoadUserInventory();
+
+        itemStatus = GameObject.FindGameObjectWithTag("ItemStatus").GetComponent<ItemStatus>();
     }
 
     void Update()
     {
         if (startingDone) return;
 
-        if (messageManager.GetResolved("Once you enter that door, there's no coming back, good luck!"))
+        if (messageManager.GetResolved("You can't encounter them without proper equipment, here take this."))
         {
             tabletButton.SetActive(true);
             tabletObject.SetActive(true);
             startingDone = true;
+
+            itemStatus.ShowItemPopup("Tablet", 1);
         }
     }
 
-    IEnumerator StartConversation()
+    public void StartConversation()
     {
-        yield return new WaitForSeconds(4.8f);
-
         messageManager.Edit("Master", new string[] {
-            "Hey Bonine! Sorry I lost connection. Glad to see you safe!",
+            "Sorry, I'm facing connection issues.. glad to see you safe Bonine!",
+            "The robots seem to have become overclocked!",
             "<icon>", "1",
-            "Alright, listen up, this floor's gonna be a tough one.",
-            "The buckets and the W0RMs, they went OVERCLOCKED!",
-            "Using multiple utility with one hand might become difficult for you, here take this.",
-            "This is a Tablet, it has many functionalities",
-            "On the bottom right corner, you'll see two utility slots, where you can use utility on your off hand.",
-            "Throughout your journey, you'll get many more applications for this tablet",
-            "Once you enter that door, there's no coming back, good luck!"
+            "You can't encounter them without proper equipment, here take this.",
+            "This is a tablet which allows you to manage your utilities and much more.",
+            "Give it a go, apply your utilities in the bottom right corner to use both hands during combat."
         }, chatIcons);
+
+        gameManager.hasTablet = true;
     }
 
     public void Showdown()
@@ -141,10 +141,8 @@ public class Floor_4Manager : MonoBehaviour
         showdownAudio.Stop();
 
         messageManager.Edit("Master", new string[] {
-            "Uhh",
-            "<icon>", "1",
             "Bonine, you did it, congrats!",
             "I hope you utilized your tablet properly!"
-        }, chatIcons);
+        }, chatIcons, 2);
     }
 }

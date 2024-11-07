@@ -26,6 +26,7 @@ public class Bucket : MonoBehaviour
     void Update()
     {
         if (despawnTimer > 0f && willDespawn) despawnTimer -= Time.deltaTime;
+        else if (willDespawn) Destroy(gameObject);
 
         // Deal damage to Bonine after a specific interval 'timer' only if Bonine is colliding with Bucket
         if (isColliding)
@@ -81,10 +82,9 @@ public class Bucket : MonoBehaviour
                     Vector2 randomDirection = Random.insideUnitCircle.normalized;
                     RaycastHit2D ray = Physics2D.Raycast(transform.position, randomDirection, 2.5f);
 
-                    if (despawnTimer >= 0) agent.SetDestination(ray.point);
+                    if (despawnTimer > 0 || !willDespawn) agent.SetDestination(ray.point);
                     yield return new WaitForSeconds(0.75f);
-                    if (despawnTimer >= 0) agent.SetDestination(transform.position);
-
+                    if (despawnTimer > 0 || !willDespawn) agent.SetDestination(transform.position);
                 }
             }
         }

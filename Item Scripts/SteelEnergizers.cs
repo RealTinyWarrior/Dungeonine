@@ -29,9 +29,11 @@ public class SteelEnergizers : MonoBehaviour
         if (!itemController.input) return;
 
         // Instantiates a bullet at the direction where mouse was clicked
-        SteelEnergizersBullet bullet = Instantiate(bulletObject, new Vector2(transform.position.x, transform.position.y), Quaternion.identity).GetComponent<SteelEnergizersBullet>();
+        SteelEnergizersBullet bullet = Instantiate(bulletObject, new Vector2(transform.position.x, transform.position.y - 0.35f), Quaternion.identity).GetComponent<SteelEnergizersBullet>();
         float degree = ItemController.GetDegree(direction);
 
+        // Assigning data into the bullet
+        bullet.startPosition = new Vector2(transform.position.x, transform.position.y);
         bonineEnergy.DecreaseEnergy(Random.Range(minEnergy, maxEnergy));
         rotateOnDegree.Rotate(degree, itemController.attackDelay);
         bullet.damage = Random.Range(minDamage, maxDamage);

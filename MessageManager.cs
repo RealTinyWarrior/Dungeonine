@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Diagnostics;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,12 +17,13 @@ public class MessageManager : MonoBehaviour
     public Image userIconField;
     public GameObject messageObject;
     public GameObject choiceObject;
-    public AudioSource typingAudio;
+    public AudioSource[] typingAudios;
     string tempQuestion = "";
     Movement bonineMovement;
     string resolved = "";
     int position = 0;
     int toBeDecreased = 1;
+    int currentTypingAudio = 0;
     string[] texts;
     Sprite[] icons;
     Coroutine typeTextCoroutine;
@@ -29,17 +31,20 @@ public class MessageManager : MonoBehaviour
     void Start() => bonineMovement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
 
     // Opens the message popup with the specified information
-    public void Edit(string name, string[] userTexts, Sprite[] userIcons)
+    public void Edit(string name, string[] userTexts, Sprite[] userIcons, int spriteIndex = 0, int audioIndex = 0)
     {
         bonineMovement.ChangeAnimationState(bonineMovement.idleState);
         bonineMovement.allowMovement = false;
-        typingAudio.Play();
+
+        currentTypingAudio = audioIndex;
+        typingAudios[currentTypingAudio].Play();
+
         chatNameField.text = name;
         textField.text = "";
         texts = userTexts;
         icons = userIcons;
 
-        ChangeIcon(icons[0]);
+        ChangeIcon(icons[spriteIndex]);
         messageObject.SetActive(true);
         StartCoroutine(TypeText(texts[position]));
     }
@@ -58,6 +63,14 @@ public class MessageManager : MonoBehaviour
         return new bool[] { false, false };
     }
 
+    public void StopAllTypingAudios()
+    {
+        foreach (AudioSource audioClip in typingAudios)
+        {
+            audioClip.Stop();
+        }
+    }
+
     // Goes to the next line of dialogue
     public void NextButton()
     {
@@ -71,8 +84,9 @@ public class MessageManager : MonoBehaviour
             messageObject.SetActive(false);
             bonineMovement.allowMovement = true;
             position = 0;
-            typingAudio.Stop();
+            StopAllTypingAudios();
 
+            currentTypingAudio = 0;
             toBeDecreased = 1;
         }
 
@@ -80,40 +94,39 @@ public class MessageManager : MonoBehaviour
         {
             position++;
 
-            if (texts[position] == "<name>")
+            switch (texts[position])
             {
-                chatNameField.text = texts[position + 1];
-                position += 2;
+                case "<name>":
+                    chatNameField.text = texts[position + 1];
+                    position += 2;
 
-                toBeDecreased = 3;
-            }
+                    toBeDecreased = 3;
+                    break;
 
-            else if (texts[position] == "<icon>")
-            {
-                int textureIndex = Convert.ToInt32(texts[position + 1]);
-                ChangeIcon(icons[textureIndex]);
-                position += 2;
+                case "<icon>":
+                    int textureIndex = Convert.ToInt32(texts[position + 1]);
+                    ChangeIcon(icons[textureIndex]);
+                    position += 2;
 
-                toBeDecreased = 3;
-            }
+                    toBeDecreased = 3;
+                    break;
 
-            else if (texts[position] == "<choice>")
-            {
-                choiceObject.SetActive(true);
-                tempQuestion = texts[position + 1];
-                position += 2;
+                case "<choice>":
+                    choiceObject.SetActive(true);
+                    tempQuestion = texts[position + 1];
+                    position += 2;
 
-                toBeDecreased = 3;
-            }
+                    toBeDecreased = 3;
+                    break;
 
-            else
-            {
-                choiceObject.SetActive(false);
-                toBeDecreased = 1;
+                default:
+                    choiceObject.SetActive(false);
+                    toBeDecreased = 1;
+                    break;
             }
 
             textField.text = "";
-            typingAudio.Play();
+            typingAudios[currentTypingAudio].Play();
             StartCoroutine(TypeText(texts[position]));
             resolved = texts[position - toBeDecreased];
         }
@@ -143,7 +156,7 @@ public class MessageManager : MonoBehaviour
             yield return new WaitForSeconds(typingSpeed);
         }
 
-        typingAudio.Stop();
+        StopAllTypingAudios();
         typeTextCoroutine = null;
     }
 

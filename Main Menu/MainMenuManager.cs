@@ -30,7 +30,7 @@ public class MainMenuManager : MonoBehaviour
     public void NoConfirmationOfGameQuit()
     {
         quitPanel.SetActive(false);
-        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
+        Cursor.SetCursor(defaultCursor, new Vector2(5, 0), CursorMode.Auto);
     }
 
     public void YesConfirmationOfDataReset()
@@ -50,7 +50,7 @@ public class MainMenuManager : MonoBehaviour
         PlayerPrefs.Save();
 
         resetPanel.SetActive(false);
-        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
+        Cursor.SetCursor(defaultCursor, new Vector2(5, 0), CursorMode.Auto);
 
         playPanel.SetActive(true);
         localAudio.Stop();
@@ -60,12 +60,12 @@ public class MainMenuManager : MonoBehaviour
     public void NoConfirmationOfDataReset()
     {
         resetPanel.SetActive(false);
-        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
+        Cursor.SetCursor(defaultCursor, new Vector2(5, 0), CursorMode.Auto);
     }
 
     void Start()
     {
-        Cursor.SetCursor(defaultCursor, Vector2.zero, CursorMode.Auto);
+        Cursor.SetCursor(defaultCursor, new Vector2(5, 0), CursorMode.Auto);
         text.text = splashTexts[Random.Range(0, splashTexts.Length - 1)];
         localAudio = GetComponent<AudioSource>();
 

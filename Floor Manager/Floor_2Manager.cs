@@ -1,7 +1,9 @@
 using UnityEngine;
 using System.Collections;
-using UnityEngine.SceneManagement;
 using Unity.VisualScripting;
+using UnityEngine.Rendering;
+using URPGlitch.Runtime.AnalogGlitch;
+using UnityEngine.Rendering.Universal;
 
 public class Floor_2Manager : MonoBehaviour
 {
@@ -13,6 +15,7 @@ public class Floor_2Manager : MonoBehaviour
     public GameObject darkManager01;
     public GameObject startLadder;
     public AudioSource backgroundMusic;
+    public Light2D globalLight;
     MessageManager messageManager;
     EntityManager entityManager;
     Movement movement;
@@ -20,9 +23,51 @@ public class Floor_2Manager : MonoBehaviour
     GameManager pauseManager;
     bool hasCompletedLevel = false;
 
+    [Header("Glitch")]
+    public Volume postProcessingVolume;
+    AnalogGlitchVolume glitch;
+
+    [Range(0, 1)]
+    public float jitter;
+    [Range(0, 1)]
+    public float verticalJump;
+    [Range(0, 1)]
+    public float horizontalJump;
+    [Range(0, 1)]
+    public float colorDrift;
+
+    public float minDirectionBlink;
+    public float maxDirectionBlink;
+
+    [Header("Blink Color")]
+    public Color leftColor;
+    public Color rightColor;
+
+    void Start()
+    {
+        entityManager = GameObject.FindGameObjectWithTag("EntityManager").GetComponent<EntityManager>();
+        GameObject gameManager = GameObject.FindGameObjectWithTag("GameManager");
+        pauseManager = gameManager.GetComponent<GameManager>();
+        messageManager = gameManager.GetComponent<MessageManager>();
+        inventory = gameManager.GetComponent<InventoryManager>();
+        movement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
+
+        if (PlayerPrefs.GetInt("LevelsUnlocked", 2) > 2)
+        {
+            hasCompletedLevel = true;
+        }
+
+        if (postProcessingVolume.profile.TryGet<AnalogGlitchVolume>(out var volume))
+        {
+            glitch = volume;
+        }
+
+        inventory.LoadUserInventory();
+    }
+
     void Update()
     {
-        if (messageManager.GetResolved("Quick RUN!! Close the gates by flicking the lever, run!") || messageManager.GetResolved("You know the drill, run!"))
+        if (messageManager.GetResolved("Close the gates by flicking the lever, RUN!!") || messageManager.GetResolved("You know the drill, run!"))
         {
             music.Play();
             backgroundMusic.Stop();
@@ -33,60 +78,13 @@ public class Floor_2Manager : MonoBehaviour
             movement.speed = 6;
             movement.allowMovement = true;
             startLadder.SetActive(false);
+
+            // Applying glitch effect
+            glitch.scanLineJitter.value = jitter;
+            glitch.verticalJump.value = verticalJump;
+            glitch.horizontalShake.value = horizontalJump;
+            glitch.colorDrift.value = colorDrift;
         }
-    }
-
-    void Start()
-    {
-        entityManager = GameObject.FindGameObjectWithTag("EntityManager").GetComponent<EntityManager>();
-        GameObject gameManager = GameObject.FindGameObjectWithTag("GameManager");
-        pauseManager = gameManager.GetComponent<GameManager>();
-        messageManager = gameManager.GetComponent<MessageManager>();
-        inventory = gameManager.GetComponent<InventoryManager>();
-        movement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
-        StartCoroutine(Conversation());
-
-        if (PlayerPrefs.GetInt("LevelsUnlocked", 2) > 2)
-        {
-            hasCompletedLevel = true;
-        }
-
-        inventory.LoadUserInventory();
-    }
-
-    IEnumerator Conversation()
-    {
-        movement.allowMovement = false;
-        yield return new WaitForSeconds(4.8f);
-
-        if (!hasCompletedLevel)
-        {
-            messageManager.Edit("Master", new string[] {
-                "Look who's back!",
-                "Congrats for finding your way out of there.",
-                "Move on, more mysteries await!"
-            }, chatIcons);
-        }
-
-        else
-        {
-            messageManager.Edit("Master", new string[] {
-                "So you are back again on this floor.",
-                "Remember, the buckets are still out here, so be careful."
-            }, chatIcons);
-        }
-    }
-
-    public void LastMomentConvo()
-    {
-        if (hasPulledLever) return;
-
-        hasPulledLever = true;
-        messageManager.Edit("Master", new string[] {
-            "Good job!",
-            "This floor is dangerous, be careful..",
-            "Anyways.. move on!"
-        }, chatIcons);
     }
 
     public void TouchTrigger()
@@ -94,11 +92,10 @@ public class Floor_2Manager : MonoBehaviour
         if (!hasCompletedLevel)
         {
             messageManager.Edit("Master", new string[] {
-                "Uh oh...",
-                "The buckets, they escaped...",
-                "You uhh.. have to RUN!",
-                "Listen to the blue arrows and DO NOT listen to the red arrows.",
-                "Quick RUN!! Close the gates by flicking the lever, run!"
+                "Uh oh.. The buckets, they escaped...",
+                "I think you have to, run..",
+                "When the blue light flashes, turn left. If the red light flashes, turn right.",
+                "Close the gates by flicking the lever, RUN!!"
             }, chatIcons);
         }
 
@@ -112,30 +109,38 @@ public class Floor_2Manager : MonoBehaviour
         }
     }
 
-    public void SpawnMoreBuckets(int index) => StartCoroutine(SpawnBucket(moreBuckets[index]));
-    public void SetDoorToClosed() => doormanager.doorIsOpened = true;
-
-    public void SaveGame()
+    public void ShowDirection(bool left)
     {
-        PlayerPrefs.SetInt("LevelsUnlocked", 2);
-        PlayerPrefs.Save();
-
-        inventory.SaveUserInventory();
-        SceneManager.LoadScene("MainMenu");
+        StartCoroutine(ShowDirectionLighting(left));
     }
 
+    IEnumerator ShowDirectionLighting(bool isLeft)
+    {
+        for (int i = 0; i < UnityEngine.Random.Range(7, 10); i++)
+        {
+            globalLight.color = isLeft ? leftColor : rightColor;
+            yield return new WaitForSeconds(UnityEngine.Random.Range(minDirectionBlink, maxDirectionBlink));
+            globalLight.color = Color.white;
+            yield return new WaitForSeconds(UnityEngine.Random.Range(minDirectionBlink, maxDirectionBlink));
+        }
+    }
+
+    public void SpawnMoreBuckets(int index) => StartCoroutine(SpawnBucket(moreBuckets[index], index > 3));
+    public void SetDoorToClosed() => doormanager.doorIsOpened = true;
+
+    // Slowly spawns bucket at the start of the match
     IEnumerator SlowlySpawnBuckets()
     {
-        for (int i = 1; i <= 60; i++)
+        for (int i = 1; i <= 55; i++)
         {
             Bucket bucket = entityManager.Spawn(EntityCode.Bucket_No_Glow, i % 2 == 0 ? new Vector2(6.5f, 3.5f) : new Vector2(-5.2f, 3.5f)).GetComponent<Bucket>();
             bucket.willDespawn = true;
+            bucket.despawnTimer = 30;
+
             bucket.viewDistance = 1000;
-            bucket.despawnTimer = 50;
             bucket.speed = 10.5f;
 
             Health bucketHealth = bucket.GetComponent<Health>();
-            bucket.AddComponent<DestroyObject>().timer = 50;
             bucketHealth.maxHealth = 100;
             bucketHealth.health = 100;
 
@@ -143,16 +148,18 @@ public class Floor_2Manager : MonoBehaviour
         }
     }
 
-    IEnumerator SpawnBucket(Vector2 position)
+    IEnumerator SpawnBucket(Vector2 position, bool finalBuckets)
     {
-        for (int i = 1; i <= 22; i++)
+        for (int i = 1; i <= 17; i++)
         {
             Bucket bucket = entityManager.Spawn(EntityCode.Bucket_No_Glow, position).GetComponent<Bucket>();
+            bucket.willDespawn = true;
+            bucket.despawnTimer = finalBuckets ? 40 : 20;
+
             bucket.viewDistance = 1000;
             bucket.speed = 10.5f;
 
             Health bucketHealth = bucket.GetComponent<Health>();
-            bucket.AddComponent<DestroyObject>().timer = 50;
             bucketHealth.maxHealth = 100;
             bucketHealth.health = 100;
 

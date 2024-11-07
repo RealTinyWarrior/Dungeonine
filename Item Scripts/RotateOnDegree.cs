@@ -3,12 +3,18 @@ using UnityEngine;
 public class RotateOnDegree : MonoBehaviour
 {
     Movement movement;
+    GameManager gameManager;
 
-    void Start() => movement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
+    void Start()
+    {
+        movement = GameObject.FindGameObjectWithTag("Bonine").GetComponent<Movement>();
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+    }
 
     // Rotates Bonine to the specified direction for `timer` seconds
     public void Rotate(float degree, float timer)
     {
+        if (gameManager.pausePanel.activeInHierarchy) return;
         movement.rotationTimer = timer;
 
         if (degree > 330 || degree <= 60)

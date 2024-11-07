@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
+using URPGlitch.Runtime.AnalogGlitch;
 
 public class Floor_3Manager : MonoBehaviour
 {
@@ -11,7 +13,6 @@ public class Floor_3Manager : MonoBehaviour
     public Sprite emptySprite;
     public GameObject startConversationTrigger;
     public GameObject darkManager;
-    public Image glitchImage;
     public Image faceImage;
     public AudioSource dollMusic;
     public AudioSource heartBeat;
@@ -25,6 +26,9 @@ public class Floor_3Manager : MonoBehaviour
     public Vector2[] spawnPoints;
     public GameObject sadLilyth;
     public GameObject happyLilyth;
+    public Volume postProcessingVolume;
+    public Sprite interactionIcon;
+    AnalogGlitchVolume glitch;
     EntityManager entityManager;
     InventoryManager inventory;
     BonineHealth bonineHealth;
@@ -38,6 +42,7 @@ public class Floor_3Manager : MonoBehaviour
     bool saidNo = false;
     bool domeConversationDone = false;
     bool foundOrb = false;
+    bool firstConvoDone = false;
 
     void Start()
     {
@@ -52,11 +57,21 @@ public class Floor_3Manager : MonoBehaviour
         inventory = gameManagerObject.GetComponent<InventoryManager>();
         entityManager = GameObject.FindGameObjectWithTag("EntityManager").GetComponent<EntityManager>();
         inventory.LoadUserInventory();
+
+        if (postProcessingVolume.profile.TryGet<AnalogGlitchVolume>(out var volume))
+        {
+            glitch = volume;
+        }
     }
 
     void Update()
     {
         // * Lilyth's Toy Question Manager
+
+        if (messageManager.GetResolved("Appreciate your help, my friend.. While you were away, I found this in the dungeon."))
+        {
+            inventory.AddItemOnBonine(ItemCode.SuspiciousCrystal, 1);
+        }
 
         bool[] toyAnswer = messageManager.GetAnswer("Toy Question");
 
@@ -72,7 +87,7 @@ public class Floor_3Manager : MonoBehaviour
                 messageManager.Edit("Lilyth", new string[] {
                     "Thank you for your kind words! He must be somewhere in this.. maze.",
                     "I hope that he is alright.."
-                }, chatIcons);
+                }, chatIcons, 2, 1);
 
                 startConversationTrigger.SetActive(false);
             }
@@ -82,8 +97,11 @@ public class Floor_3Manager : MonoBehaviour
 
         if (messageManager.GetResolved("I hope that he is alright.."))
         {
+            if (firstConvoDone) return;
+
             bonineMovement.allowMovement = true;
             darkManager.SetActive(false);
+            firstConvoDone = true;
 
             SpawnEntities();
         }
@@ -104,7 +122,7 @@ public class Floor_3Manager : MonoBehaviour
                     messageManager.Edit("Dome", new string[] {
                         "Your lies ain't workin' on me bud.",
                         "Go find it, then I'm allowing you to go in."
-                    }, chatIcons);
+                    }, chatIcons, 4, 2);
 
                     bonine.transform.position = new Vector2(bonine.transform.position.x + 0.1f, bonine.transform.position.y);
                 }
@@ -118,7 +136,7 @@ public class Floor_3Manager : MonoBehaviour
                     messageManager.Edit("Dome", new string[] {
                         "Thanks a lot mate! Here, keep these Steel Energizers.",
                         "Good luck on your adventure my guy."
-                    }, chatIcons);
+                    }, chatIcons, 4, 2);
 
                     inventory.RemoveItem(inventory.ItemIndexOnInventory((int)ItemCode.SuspiciousCrystal));
                     inventory.AddItemOnBonine(ItemCode.SteelEnergizers, 1);
@@ -132,7 +150,7 @@ public class Floor_3Manager : MonoBehaviour
 
                 messageManager.Edit("Dome", new string[] {
                    "Go ahead and find it."
-                }, chatIcons);
+                }, chatIcons, 4, 2);
             }
         }
     }
@@ -142,9 +160,9 @@ public class Floor_3Manager : MonoBehaviour
     {
         if (startConversationDone && !saidNo) return;
 
-        messageManager.Edit("Interact", new string[] {
+        messageManager.Edit("interact", new string[] {
             "Something is stopping you from going there."
-        }, new Sprite[] { emptySprite });
+        }, new Sprite[] { interactionIcon });
 
         bonine.transform.position = new Vector2(bonine.transform.position.x, bonine.transform.position.y - 0.2f);
     }
@@ -164,7 +182,7 @@ public class Floor_3Manager : MonoBehaviour
                 "<choice>",
                 "Toy Question",
                 "Can you help me find him?"
-            }, chatIcons);
+            }, chatIcons, 2, 1);
 
             return;
         }
@@ -180,13 +198,12 @@ public class Floor_3Manager : MonoBehaviour
                     "Cupcake!! You are back!",
                     "Appreciate your help, my friend.. While you were away, I found this in the dungeon.",
                     "A crystal, you may find this useful."
-                }, chatIcons);
+                }, chatIcons, 3, 1);
 
                 sadLilyth.SetActive(false);
                 happyLilyth.SetActive(true);
 
                 inventory.RemoveItem(itemIndex);
-                inventory.AddItemOnBonine(ItemCode.SuspiciousCrystal, 1);
                 dollObject.SetActive(true);
                 dollObject.transform.position = new Vector2(11.12f, -2.1f);
 
@@ -196,7 +213,7 @@ public class Floor_3Manager : MonoBehaviour
 
             messageManager.Edit("Lilyth", new string[] {
                 "I hope that he is alright.."
-            }, chatIcons);
+            }, chatIcons, 2, 1);
 
             return;
         }
@@ -211,7 +228,7 @@ public class Floor_3Manager : MonoBehaviour
             "<choice>",
             "Toy Question",
             "Can you help me find him?"
-        }, chatIcons);
+        }, chatIcons, 1, 1);
     }
 
     public void OnDollPickup()
@@ -277,11 +294,18 @@ public class Floor_3Manager : MonoBehaviour
         jumpscareAudio.Play();
 
         saidNo = true;
-        glitchImage.DOFade(0.5f, 0.4f);
+        glitch.scanLineJitter.value = 0.76f;
+        glitch.colorDrift.value = 1f;
+        glitch.verticalJump.value = 0.3f;
+        glitch.horizontalShake.value = 0.2f;
 
         yield return new WaitForSeconds(0.4f);
         bonine.transform.position = new Vector2(-123, 25);
-        glitchImage.DOFade(0f, 0.4f);
+
+        glitch.scanLineJitter.value = 0f;
+        glitch.colorDrift.value = 0f;
+        glitch.verticalJump.value = 0f;
+        glitch.horizontalShake.value = 0f;
 
         yield return new WaitForSeconds(0.18f);
         jumpscareAudio.Stop();
@@ -320,11 +344,17 @@ public class Floor_3Manager : MonoBehaviour
         jumpscareAudio.Play();
 
         saidNo = true;
-        glitchImage.DOFade(0.2f, 0.5f);
+        glitch.scanLineJitter.value = 0.76f;
+        glitch.colorDrift.value = 1f;
+        glitch.verticalJump.value = 0.3f;
+        glitch.horizontalShake.value = 0.2f;
         faceImage.DOFade(0.9f, 0.5f);
 
         yield return new WaitForSeconds(0.5f);
-        glitchImage.DOFade(0f, 0.5f);
+        glitch.scanLineJitter.value = 0f;
+        glitch.colorDrift.value = 0f;
+        glitch.verticalJump.value = 0f;
+        glitch.horizontalShake.value = 0f;
         faceImage.DOFade(0f, 0.5f);
 
         yield return new WaitForSeconds(0.3f);
@@ -348,7 +378,7 @@ public class Floor_3Manager : MonoBehaviour
                 "<choice>",
                 "Dome Question",
                 "Have you found the crystal?",
-            }, chatIcons);
+            }, chatIcons, 4, 2);
 
             return;
         }
@@ -359,7 +389,7 @@ public class Floor_3Manager : MonoBehaviour
             "<choice>",
             "Dome Question",
             "Have you happened to see a crystal lying around here?",
-        }, chatIcons);
+        }, chatIcons, 4, 2);
 
         domeConversationDone = true;
     }

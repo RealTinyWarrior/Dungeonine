@@ -17,6 +17,7 @@ public class DoorManager : MonoBehaviour
     public bool doorIsOpened = false;
     public bool isFloor2 = false;
     public AudioSource doorOpen;
+    public Sprite interactionIcon;
     Movement movement;
     MessageManager messageManager;
     Collider2D tempCol;
@@ -51,7 +52,7 @@ public class DoorManager : MonoBehaviour
         if (itemIndex == -1)
         {
             movement.allowMovement = false;
-            messageManager.Edit("Interact", new string[] { "You need a key to open this door." }, new Sprite[] { emptySprite });
+            messageManager.Edit("interact", new string[] { "You need a key to open this door." }, new Sprite[] { interactionIcon });
 
             return;
         }

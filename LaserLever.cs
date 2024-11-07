@@ -11,7 +11,7 @@ public class LaserLever : MonoBehaviour
         if (isOn) return;
         GetComponent<SpriteRenderer>().sprite = leverOn;
 
-        turnOff.SetActive(false);
+        if (turnOff != null) turnOff.SetActive(false);
         isOn = true;
     }
 }
