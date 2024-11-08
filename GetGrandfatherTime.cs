@@ -3,7 +3,7 @@ using System;
 
 public class GetGrandfatherTime : MonoBehaviour
 {
-    public Sprite emptySprite;
+    public Sprite interactSprite;
     MessageManager messageManager;
 
     void Start()
@@ -26,6 +26,6 @@ public class GetGrandfatherTime : MonoBehaviour
 
         messageManager.Edit("Clock", new string[] {
             "The clock says it is " + text
-        }, new Sprite[] { emptySprite });
+        }, new Sprite[] { interactSprite });
     }
 }
