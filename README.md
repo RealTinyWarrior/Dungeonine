@@ -1,6 +1,6 @@
 # Dungeonine
 
-The code of the first game made by me, **Dungeonine**! Dungeonine is a action and puzzle based adventure game where you are a robot called Bonine trying to survive in a mysterious dungeon! The game hasn't been launched yet and is at it's beta stage of development. The game is constantly being updated and the link to the game will be published when the game is ready to be launched.
+The code of the first game made by me, **Dungeonine**! Dungeonine is a action and puzzle based adventure game where you are a robot called **Bonine** trying to survive in a mysterious dungeon! Dungeonine is at it's alpha stage and can be downloaded from [here](https://gamejolt.com/games/dungeonine/956172). Current release: v1.1.2 Alpha.
 
 ### The code
 
